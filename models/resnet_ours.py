@@ -195,109 +195,51 @@ class LinearBatchNorm(nn.Module):
         return x
 
 
-class SimpleLinear(nn.Module):
-    '''
-    Reference:
-    https://github.com/pytorch/pytorch/blob/master/torch/nn/modules/linear.py
-    '''
-    def __init__(self, in_features, out_features, bias=True):
-        super(SimpleLinear, self).__init__()
-        self.in_features = in_features
-        self.out_features = out_features
-        self.weight = nn.Parameter(torch.Tensor(out_features, in_features))
-        if bias:
-            self.bias = nn.Parameter(torch.Tensor(out_features))
-        else:
-            self.register_parameter('bias', None)
-        self.reset_parameters()
-
-    def reset_parameters(self):
-        nn.init.kaiming_uniform_(self.weight, nonlinearity='linear')
-        nn.init.constant_(self.bias, 0)
-
-    def forward(self, input):
-        return F.linear(input, self.weight, self.bias)
 
 
 
-class BackboneResNet(nn.Module):
+class ResNetProjectorHead(nn.Module):
     """backbone + projection head"""
-    def __init__(self, name='resnet50', head='mlp', feat_dim=128, seed=777, opt=None):
-        super(BackboneResNet, self).__init__()
+    def __init__(self, name='resnet50', seed=777, cfg=None):
+        super(ResNetProjectorHead, self).__init__()
 
+        # seed値の決定
         seed_everything(seed=seed)
+        
+        # configの保存
+        self.cfg = cfg
 
+        # モデル名と次元数を獲得
         model_fun, dim_in = model_dict[name]
         self.dim_in = dim_in
+        
+        # Encoderの作成
         self.encoder = model_fun()
 
-        self.opt = opt
+        # projection head の作成
+        self.head1 = nn.Sequential(
+            nn.Linear(dim_in, cfg.model.hidden_dim),
+            nn.BatchNorm1d(cfg.model.hidden_dim),
+            nn.ReLU()
+        )
 
-        #  交差エントロピー損失などはlinear
-        if head == 'linear':
+        self.head2 = nn.Sequential(
+            nn.Linear(cfg.model.hidden_dim, cfg.model.hidden_dim),
+            nn.BatchNorm1d(cfg.model.hidden_dim),
+            nn.ReLU(),
+            nn.Linear(cfg.model.hidden_dim, cfg.model.output_dim))
 
-            # 最初のfc層は opt.cls_per_task の出力のみ
-            # self.head = nn.Linear(dim_in, opt.cls_per_task)
-            self.head = SimpleLinear(dim_in, opt.continual.cls_per_task[0])
-        
-        # Contrastive Lossなどはmlp
-        elif head == 'mlp':
-            self.head = nn.Sequential(
-                nn.Linear(dim_in, dim_in),
-                nn.ReLU(inplace=True),
-                nn.Linear(dim_in, feat_dim)
-            )
-        else:
-            raise NotImplementedError(
-                'head not supported: {}'.format(head))
+
 
     def reinit_head(self):
         for layers in self.head.children():
             if hasattr(layers, 'reset_parameters'):
                 layers.reset_parameters()
 
-    def update_fc(self, cfg):
-
-        # 新しいタスクのクラス数
-        # num_classes = (self.opt.target_task + 1) * self.opt.cls_per_task
-        num_classes = sum(cfg.continual.cls_per_task[:cfg.continual.target_task+1])
-        print("num_classes: ", num_classes)
-
-        # 新しいクラス数に合わせてfc層を構築
-        new_fc = self.generate_fc(self.dim_in, num_classes)
-
-
-        if self.head is not None:
-            nb_output = self.head.out_features
-            weight = copy.deepcopy(self.head.weight.data)
-            bias = copy.deepcopy(self.head.bias.data)
-            new_fc.weight.data[:nb_output] = weight
-            new_fc.bias.data[:nb_output] = bias
-
-        del self.head
-        self.head = new_fc
-        print("self.head.weight.shape: ", self.head.weight.shape)
-        return list(self.head.parameters())
-
-
-    
-    def generate_fc(self, in_dim, out_dim):
-        fc = SimpleLinear(in_dim, out_dim)
-
-        return fc
 
     def forward(self, x, return_feat=False, norm=True):
-        encoded = self.encoder(x)
-        # if norm:
-        #     feat = F.normalize(self.head(encoded), dim=1)
-        # else:
-        #     feat = self.head(encoded)
-
-        feat = self.head(encoded)
-
-        if return_feat:
-            return feat, encoded
-        else:
-            return feat
+        
+        assert False
+        
 
 

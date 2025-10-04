@@ -20,6 +20,14 @@ dataset:
   size: 224
 
 
+optimizer:
+  train:
+    learning_rate: 0.03
+    weight_decay: 1e-4
+    momentum: 0.9
+    eta: 0.005
+
+
 continual:
   n_cls: 15813
   cls_per_task: [92,  323,  217, 58,  942, 410, 105, 161, 142, 29,
@@ -33,7 +41,7 @@ continual:
                  140, 29,   124, 11,  29,  45,  25,  35,  79,  141, 
                  30,  36,   60,  161, 33,  85,  46,  158, 49,  18]
   n_task: 100
-  mem_type: "ring"
+  mem_type: "random"
   mem_size: 50000
   target_task: 
   offline: False

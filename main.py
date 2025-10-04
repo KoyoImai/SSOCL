@@ -13,6 +13,8 @@ import torch.distributed as dist
 
 from utils import seed_everything
 from models import make_model
+from losses import make_criterion
+from optimizers import make_optimizer
 
 
 
@@ -89,18 +91,33 @@ def main(cfg):
         assert False
 
 
-
-
     # ===========================================
     # modelの作成
     # ===========================================
-    model = make_model(cfg)
+    model, model2 = make_model(cfg)
 
 
+    # ===========================================
+    # 損失関数の作成
+    # ===========================================
+    criterions = make_criterion(cfg)
 
-    # # ===========================================
-    # # データローダーの作成
-    # # ===========================================
+
+    # ===========================================
+    # Optimizerの作成
+    # ===========================================
+    optimizer = make_optimizer(cfg, model)
+    # print("optimizer: ", optimizer)
+
+
+    # ===========================================
+    # データローダーの作成
+    # ===========================================
+    transform = make_transform(cfg)
+    dataset = make_dataset(cfg)
+    sampler = make_sampler(cfg)
+    batch_sampler = make_batchsampler(cfg)
+
 
 
 
