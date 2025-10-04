@@ -1,0 +1,11 @@
+logs
+outputs
+
+__pycache__/
+*.pyc
+*.pkl
+*.npy
+*.pt
+*.log
+.vscode/
+*.pdf
