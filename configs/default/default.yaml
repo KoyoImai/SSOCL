@@ -1,0 +1,39 @@
+
+
+
+
+
+model:
+  type: "resnet18_empssl"
+  hidden_dim: 4096
+  output_dim: 1024
+
+
+
+dataset:
+  type: "cifar10"
+  num_classes: 10
+  dataset_dir: '/home/kouyou/Datasets/'
+
+
+log:
+  name: "default"
+  model: "model"
+  result: "result"
+  base_dir: "/home/kouyou/ContinualLearning/SSOCL/logs/"
+  model_dir: 
+  result_dir: 
+
+
+ddp:
+  local_rank: 
+  use_ddp: 
+  world_size: 
+
+
+seed: 777
+
+
+hydra:
+  run:
+    dir: outputs/my_experiment_name
