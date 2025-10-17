@@ -11,6 +11,9 @@ dataset:
   data_folder: /home/kouyou/datasets/
   filelist: /home/kouyou/datasets/ImageNet21K/filelists/kmeans_clustering_100/filelists/similar_order
   size: 224
+  drop_last: true
+  start_index: 0
+  sharding: interleave
 optimizer:
   train:
     learning_rate: 0.03
@@ -123,8 +126,6 @@ continual:
   n_task: 100
   mem_type: random
   mem_size: 50000
-  target_task: null
-  offline: false
 log:
   name: null
   base: default
@@ -144,3 +145,4 @@ seed: 777
 date: 20251004
 workers: 8
 print_freq: 10
+debug: true

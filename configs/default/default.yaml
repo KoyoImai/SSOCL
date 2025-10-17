@@ -18,6 +18,9 @@ dataset:
   data_folder: '/home/kouyou/datasets/'
   filelist: "/home/kouyou/datasets/ImageNet21K/filelists/kmeans_clustering_100/filelists/similar_order"
   size: 224
+  drop_last: True
+  start_index: 0
+  sharding: "interleave"
 
 
 optimizer:
@@ -43,8 +46,6 @@ continual:
   n_task: 100
   mem_type: "random"
   mem_size: 50000
-  target_task: 
-  offline: False
 
 
 log:
@@ -70,6 +71,8 @@ seed: 777
 date: 2025_1004
 workers: 8
 print_freq: 10
+
+debug: True
 
 
 hydra:

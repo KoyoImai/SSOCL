@@ -2,6 +2,7 @@
 
 
 from dataloaders.imagenet21k import ImageNet21K
+from dataloaders.stream_sampler import StreamSampler
 
 
 
@@ -29,8 +30,15 @@ def make_dataset(cfg, transform):
 
 def make_sampler(cfg, dataset):
 
-    
+    sampler = StreamSampler(cfg=cfg, dataset=dataset, rank=cfg.ddp.local_rank, world_size=cfg.ddp.world_size,
+                            drop_last=cfg.dataset.drop_last, base_seed=cfg.seed, sharding=cfg.dataset.sharding, start_index=cfg.dataset.start_index)
 
+
+
+
+    assert False
+
+    return sampler
 
 
 
