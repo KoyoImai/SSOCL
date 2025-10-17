@@ -16,18 +16,20 @@ def make_dataset(cfg, transform):
                                     filelist=cfg.dataset.filelist,
                                     num_task=cfg.continual.n_task,
                                     train=True)
-    
+        
     else:
         
         assert False
-
-
 
     
 
     return train_dataset
 
 
+
+def make_sampler(cfg, dataset):
+
+    
 
 
 
