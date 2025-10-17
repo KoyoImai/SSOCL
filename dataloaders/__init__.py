@@ -3,7 +3,7 @@
 
 from dataloaders.imagenet21k import ImageNet21K
 from dataloaders.stream_sampler import StreamSampler
-from dataloaders.base_buffer_batchsampler import BaseBufferBatchSampler
+from dataloaders.batchsampler.base_buffer_batchsampler import BaseBufferBatchSampler
 
 
 

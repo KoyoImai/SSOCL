@@ -68,15 +68,59 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
 
     # バッファ内にそのデータの idx が存在するかの確認
     def in_buffer(self, idx: int) -> bool:
-        return int(idx) in self._buffer_entries
-
-
-    def _sync_snapshot(self) -> None:
-        """self.buffer を現在の queue/buffer_entries から再構成（軽量可視化用）．"""
-        self.buffer = [self._buffer_entries[i] for i in self._buffer_queue]
+        return int(idx) in self.buffer
 
 
 
+    # データストリームから到着したデータをバッファに格納する機能
+    def add_to_buffer(self, n_new:int) -> List[int]:
+
+        """
+        データストリームから到着した n_new 毎の画像をバッファに格納するだけ
+        バッファ内のデータの削除は後で実行
+        """
+
+        if n_new < 0:
+            return []
+        
+        added: List[int] = []
+
+        for _ in range(n_new):
+
+            if self.db_head >= len(self.all_indices):
+                break
+                
+            idx = int(self.all_indices[self.db_head])
+            self.db_head += 1
+
+            if self.in_buffer(idx):
+                continue
+                
+            entry = self._init_entry(idx)
+            self.buffer.append(entry)
+            added.append(idx)
+        
+        # lifespanを加算
+        for b in self.buffer:
+            b['lifespan'] += 1
+
+        
+        return added
+
+
+    # ---------- 抽象フック ----------
+    @abstractmethod
+    def _evict_until_fit(self) -> None:
+        """buffer_size を超えている場合，何かしらの指標をもとにデータを削除する．"""
+        pass
+
+    @abstractmethod
+    def __len__(self) -> int:
+        pass
+
+    @abstractmethod
+    def __iter__(self):
+        pass
 
 
 

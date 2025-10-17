@@ -26,6 +26,7 @@ class StreamSampler(Sampler[int]):
         
         
         """
+        各引数の説明
             dataset: 任意の Pytorch Dataset
             rank: DDP における rank
             world_size: DDP における worl size
