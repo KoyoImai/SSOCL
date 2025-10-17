@@ -16,7 +16,7 @@ from models import make_model
 from losses import make_criterion
 from optimizers import make_optimizer
 from augmentaions import make_transform
-from dataloaders import make_dataset, make_sampler
+from dataloaders import make_dataset, make_sampler, make_batchsampler
 
 
 
@@ -62,7 +62,7 @@ def main(cfg):
 
 
     # logの名前
-    cfg.log.name = f"{cfg.log.base}_{cfg.method.name}_{cfg.continual.mem_type}{cfg.continual.mem_size}_{cfg.dataset.type}_seed{cfg.seed}_date{cfg.date}"
+    cfg.log.name = f"{cfg.log.base}_{cfg.method.name}_{cfg.continual.buffer_type}{cfg.continual.buffer_size}_{cfg.dataset.type}_seed{cfg.seed}_date{cfg.date}"
 
 
     # ===========================================
@@ -118,7 +118,7 @@ def main(cfg):
     train_transform = make_transform(cfg)
     dataset = make_dataset(cfg, train_transform)
     sampler = make_sampler(cfg, dataset)
-    # batch_sampler = make_batchsampler(cfg)
+    batch_sampler = make_batchsampler(cfg, dataset, sampler)
 
     print("dataset: ", dataset)
 
