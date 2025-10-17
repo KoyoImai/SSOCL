@@ -16,6 +16,7 @@ from models import make_model
 from losses import make_criterion
 from optimizers import make_optimizer
 from augmentaions import make_transform
+from dataloaders import make_dataset
 
 
 
@@ -114,10 +115,12 @@ def main(cfg):
     # ===========================================
     # データローダーの作成
     # ===========================================
-    transform = make_transform(cfg)
-    dataset = make_dataset(cfg)
+    train_transform = make_transform(cfg)
+    dataset = make_dataset(cfg, train_transform)
     # sampler = make_sampler(cfg)
     # batch_sampler = make_batchsampler(cfg)
+
+    print("dataset: ", dataset)
 
 
 

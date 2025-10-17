@@ -1,5 +1,6 @@
 method:
   name: ours
+  num_crops: 10
 model:
   type: resnet50
   hidden_dim: 4096
@@ -8,7 +9,7 @@ dataset:
   type: imagenet21k
   num_classes: 15813
   data_folder: /home/kouyou/datasets/
-  filelist: /home/kouyou/datasets/ImageNet21K/filelists/similar_order
+  filelist: /home/kouyou/datasets/ImageNet21K/filelists/kmeans_clustering_100/filelists/similar_order
   size: 224
 optimizer:
   train:
@@ -120,7 +121,7 @@ continual:
   - 49
   - 18
   n_task: 100
-  mem_type: ring
+  mem_type: random
   mem_size: 50000
   target_task: null
   offline: false
