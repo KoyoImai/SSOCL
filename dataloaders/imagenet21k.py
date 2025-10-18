@@ -1,5 +1,6 @@
 
 import os
+import math
 import numpy as np
 from collections import defaultdict
 
@@ -103,10 +104,16 @@ class ImageNet21K(data.Dataset):
             self.all_lables = torch.tensor(all_labels)
             assert self.all_files.shape[0] == self.all_lables.shape[0]
         else:
-            self.all_files = torch.stack([encode_filename(fn) for fn in all_files[:1000]])
-            self.all_lables = torch.tensor(all_labels[:1000])
+            self.all_files = torch.stack([encode_filename(fn) for fn in all_files[:2000]])
+            self.all_lables = torch.tensor(all_labels[:2000])
             assert self.all_files.shape[0] == self.all_lables.shape[0]
 
+
+        # Sampler で各プロセス毎に均等にデータストリームを分割するため self.all_files と self.all_labels の長さを調整
+        # length は cfg.ddp.world_size * cfg.optimizer.batch_size で割り切れる必要がある
+        length = math.floor(self.all_files.shape[0] / (int(cfg.ddp.world_size) * cfg.optimizer.train.batch_size)) * (int(cfg.ddp.world_size) * cfg.optimizer.train.batch_size)
+        self.all_files = self.all_files[:length]
+        self.all_lables = self.all_lables[:length]
 
 
         # ==============================================================

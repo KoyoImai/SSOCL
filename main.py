@@ -8,6 +8,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.distributed as dist
+from torch.utils.data import DataLoader
 
 
 
@@ -119,8 +120,11 @@ def main(cfg):
     dataset = make_dataset(cfg, train_transform)
     sampler = make_sampler(cfg, dataset)
     batch_sampler = make_batchsampler(cfg, dataset, sampler)
+    trainloader = DataLoader(dataset, batch_sampler=batch_sampler, num_workers=cfg.workers, pin_memory=True)
 
-    print("dataset: ", dataset)
+    for data in trainloader:
+
+        print("aaaa")
 
 
 

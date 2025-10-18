@@ -29,7 +29,7 @@ optimizer:
     weight_decay: 1e-4
     momentum: 0.9
     eta: 0.005
-    batch_size: 512
+    batch_size: 25
 
 
 continual:
@@ -46,8 +46,8 @@ continual:
                  30,  36,   60,  161, 33,  85,  46,  158, 49,  18]
   n_task: 100
   buffer_type: "random"
-  buffer_size: 50000
-  repeat: 5
+  buffer_size: 500
+  repeat: 1
 
 
 log:

@@ -67,16 +67,8 @@ class StreamSampler(Sampler[int]):
 
         if self.sharding == "interleave":
 
-            n_after_r = max(self.dataset_len - self.rank, 0)
-            print("n_after_r: ", n_after_r)
-
-            # drop_last 適用するかで データストリームの終端部分の扱いを変更
-            if self.drop_last:
-                # floor(n_after_r / world_size)
-                self._len_per_rank = n_after_r // self.world_size
-            else:
-                # ceil(n_after_r / world_size)
-                self._len_per_rank = (n_after_r + self.world_size - 1) // self.world_size
+            assert self.dataset_len % self.world_size == 0
+            self._len_per_rank = int(self.dataset_len / self.world_size)
 
         elif self.sharding == "chunk":
 

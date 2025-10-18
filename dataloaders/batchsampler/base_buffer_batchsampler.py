@@ -4,6 +4,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional
 from torch.utils.data import Sampler
 
+import random
 from abc import ABC, abstractmethod
 
 
@@ -31,11 +32,13 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
         self.dataset = dataset
         self.sampler = sampler                 # 到着順 idx を 1 つずつ吐く（StreamSampler 等）
         self.batch_size = int(batch_size)      # この rank のバッチサイズ
-        self.buffer_size = int(buffer_size)    # バッファの最大保持数（エントリ数）
         self.repeat = int(repeat)              # 何回ミニバッチを作成するか
 
+        self.buffer_size = int(buffer_size)    # バッファの最大保持数（エントリ数）
+        self.buffer_size = int(round(self.buffer_size)//self.sampler.world_size)
+
         self.all_indices: List[int] = list(self.sampler)
-        # print("self.all_indices[:10]: ", self.all_indices[:10])   # self.all_indices[:10]:  [0, 4, 8, 12, 16, 20, 24, 28, 32, 36]
+        print("self.all_indices[:10]: ", self.all_indices[:10])   # self.all_indices[:10]:  [0, 4, 8, 12, 16, 20, 24, 28, 32, 36]
 
         
         # バッファの初期化
@@ -45,6 +48,7 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
         self.num_batches_yielded: int = 0         # 実際に yield したバッチ数
         self.batch_history: List[List[int]] = []  # 直近バッチの idx 記録（再開・デバッグ用）
         self.init_from_ckpt: bool = False         # ckpt 復元直後かどうかのフラグ
+        self.init_from_ckpt = False               # 学習途中の記録がある場合はTrue
 
         # 統計の平滑化用（Polyak 等で使う想定．参考実装に合わせて用意）
         self.gamma: float = 0.5
@@ -61,7 +65,7 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
             "label": None,          # 必要なら評価・統計用に付与（SSLでも保持するが，学習には使用しない）
             "num_seen": 0,          # 何回バッファから取り出して学習したか
             "seen": False,          # 一度でも学習に使ったかのフラグ
-            "lifespan": 0,          # バッファに滞在したイテレーション数
+            "lifespan": 0,          # バッファに保存されていた期間
         }
 
         return entry
@@ -106,6 +110,30 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
 
         
         return added
+
+
+    def sample_k(self, buffer, batch_size):
+        
+        if batch_size < len(buffer):
+            return random.sample(buffer, k=batch_size)
+        else:
+            return random.choices(buffer, k=batch_size)
+
+
+    def make_batch(self):
+
+        # バッファからバッチサイズ分だけデータを取り出す
+        batch = self.sample_k(self.buffer, self.batch_size)
+
+        # print("batch: ", batch)
+        print("len(self.buffer): ", len(self.buffer))
+        print("len(batch): ", len(batch))
+
+        # データセットの idx を取り出す
+        batch_idx = [b['idx'] for b in batch]
+
+        return batch_idx
+
 
 
     # ---------- 抽象フック ----------

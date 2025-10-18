@@ -4,6 +4,8 @@
 from dataloaders.imagenet21k import ImageNet21K
 from dataloaders.stream_sampler import StreamSampler
 from dataloaders.batchsampler.base_buffer_batchsampler import BaseBufferBatchSampler
+from dataloaders.batchsampler.minred_buffer_batchsampler import MinRedBufferBatchSampler
+
 
 
 
@@ -41,10 +43,13 @@ def make_sampler(cfg, dataset):
 
 def make_batchsampler(cfg, dataset, sampler):
 
-    batchsampler = BaseBufferBatchSampler(buffer_size=cfg.continual.buffer_size, repeat=cfg.continual.repeat,
-                                          dataset=dataset, sampler=sampler, batch_size=cfg.optimizer.train.batch_size)
-    assert False
-
+    batchsampler = MinRedBufferBatchSampler(buffer_size=cfg.continual.buffer_size, repeat=cfg.continual.repeat,
+                                            dataset=dataset, sampler=sampler, batch_size=cfg.optimizer.train.batch_size)
+    # print("len(dataset): ", len(dataset))
+    # print("len(sampler): ", len(sampler))
+    # print("len(batchsampler): ", len(batchsampler))
+    
+    return batchsampler
 
 
 
