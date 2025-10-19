@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 import torch.distributed as dist
 from torch.utils.data import DataLoader
-
+from torchvision.utils import save_image
 
 
 from utils import seed_everything
@@ -50,7 +50,11 @@ def preparation(cfg):
         os.makedirs(cfg.log.result_path)
 
 
-
+def denorm(x, mean, std):
+    x = x.detach().cpu().clone()
+    for c, m, s in zip(range(x.shape[0]), mean, std):
+        x[c] = x[c] * s + m
+    return x.clamp(0, 1)
 
 
 @hydra.main(config_path='configs/default/', config_name='default', version_base=None)
@@ -122,9 +126,44 @@ def main(cfg):
     batch_sampler = make_batchsampler(cfg, dataset, sampler)
     trainloader = DataLoader(dataset, batch_sampler=batch_sampler, num_workers=cfg.workers, pin_memory=True)
 
-    for data in trainloader:
+    # for data in trainloader:
 
-        print("aaaa")
+    #     mean=(0.5, 0.5, 0.5)
+    #     std=(0.5, 0.5, 0.5)
+
+    #     images = data["input"]
+    #     meta = data["meta"]
+
+    #     images = torch.cat(images, dim=0)
+
+    #     # if cfg.ddp.local_rank == 0:
+    #     #     print("images.shape: ", images.shape)   # images.shape:  torch.Size([500, 3, 224, 224])
+    #     # images[0:batch_size] が ミニバッチに対するデータ拡張の一つめ，images[batch_size:2*batch_size] はデータ拡張の二つめ
+        
+
+
+    #     # images[0]を保存
+    #     img0 = denorm(images[0], mean, std)
+    #     os.makedirs("outputs/vis", exist_ok=True)
+    #     save_image(img0, "outputs/vis/img0_denorm.png")
+
+    #     # images[1]を保存
+    #     img1 = denorm(images[1], mean, std)
+    #     os.makedirs("outputs/vis", exist_ok=True)
+    #     save_image(img1, "outputs/vis/img1_denorm.png")
+
+    #     # images[20]を保存
+    #     img20 = denorm(images[20], mean, std)
+    #     os.makedirs("outputs/vis", exist_ok=True)
+    #     save_image(img20, "outputs/vis/img20_denorm.png")
+
+    #     # images[25]を保存
+    #     img25 = denorm(images[25], mean, std)
+    #     os.makedirs("outputs/vis", exist_ok=True)
+    #     save_image(img25, "outputs/vis/img25_denorm.png")
+
+
+
 
 
 

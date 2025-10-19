@@ -38,7 +38,7 @@ def decode_filename(fn):
 # ==============================================================
 class ImageNet21K(data.Dataset):
 
-    def __init__(self, cfg, transform=None, filelist=None, num_task=None, train=True):
+    def __init__(self, cfg, transforms=None, filelist=None, num_task=None, train=True):
 
         data.Dataset.__init__(self)
 
@@ -113,21 +113,57 @@ class ImageNet21K(data.Dataset):
         # length は cfg.ddp.world_size * cfg.optimizer.batch_size で割り切れる必要がある
         length = math.floor(self.all_files.shape[0] / (int(cfg.ddp.world_size) * cfg.optimizer.train.batch_size)) * (int(cfg.ddp.world_size) * cfg.optimizer.train.batch_size)
         self.all_files = self.all_files[:length]
-        self.all_lables = self.all_lables[:length]
+        self.all_labels = self.all_lables[:length]
 
 
         # ==============================================================
         # データ拡張の定義
         # ==============================================================
-        if not isinstance(transform, list):
-            transform = [transform]
-        self.transform = transform
+        if not isinstance(transforms, list):
+            transforms = [transforms]
+        self.transforms = transforms
 
 
     def __getitem__(self, index):
 
-        assert False
+        MAX_TRIES = 50
+        for i in range(MAX_TRIES):
+            try:
+                fname = decode_filename(self.all_files[index])
+                image = datasets.folder.pil_loader(fname)
+                # label = self.all_labels[index]
+                break
+            except Exception:
+                if i == MAX_TRIES - 1:
+                    raise ValueError(
+                        f'Aborting. Failed to load {MAX_TRIES} times in a row. Check {fname}'
+                    )
+                print(f'Failed to load. {fname}')
+                index = np.random.randint(len(self))
+        
 
+        meta = {}
+        i = 0
+
+        transform = None
+        if self.transforms is not None:
+            i = np.random.randint(len(self.transforms))
+            transform = self.transforms[i]
+        if transform is not None:
+            image = transform(image)
+        
+
+        meta["transid"] = i
+        meta["filename"] = fname
+        meta["index"] = index
+        meta["label"] = self.all_lables[index]
+
+        out = {
+            "input": image,
+            "meta": meta,
+        }
+
+        return out
 
 
 

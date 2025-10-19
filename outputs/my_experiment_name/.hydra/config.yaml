@@ -1,6 +1,6 @@
 method:
   name: ours
-  num_crops: 10
+  num_crops: 20
 model:
   type: resnet50
   hidden_dim: 4096

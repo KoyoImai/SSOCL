@@ -3,7 +3,7 @@
 # 手法名
 method: 
   name: "ours"
-  num_crops: 10
+  num_crops: 20
 
 
 model:

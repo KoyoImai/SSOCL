@@ -16,7 +16,7 @@ def make_dataset(cfg, transform):
         # def __init__(self, cfg, transforms=None, filelist=None, num_task=None, train=True):
 
         train_dataset = ImageNet21K(cfg=cfg,
-                                    transform=transform,
+                                    transforms=transform,
                                     filelist=cfg.dataset.filelist,
                                     num_task=cfg.continual.n_task,
                                     train=True)

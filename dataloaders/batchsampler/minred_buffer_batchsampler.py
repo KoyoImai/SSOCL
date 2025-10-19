@@ -67,12 +67,12 @@ class MinRedBufferBatchSampler(BaseBufferBatchSampler):
 
                 # ミニバッチの作成
                 batch_idx = self.make_batch()
-                print("batch_idx: ", batch_idx)
+                # print("batch_idx: ", batch_idx)
 
-                assert False
+                self.num_batches_yielded += 1
+                self.batch_history += [batch_idx]
 
-
-            assert False
+                yield batch_idx
 
 
 

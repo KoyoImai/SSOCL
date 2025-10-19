@@ -37,9 +37,14 @@ class GBlur(object):
 
 class MultiCropViewGenerator(object):
 
-    def __init__(self, num_crops=4):
+    def __init__(self, cfg=None, num_crops=4):
 
         self.num_crops = num_crops
+
+        if cfg.dataset.type == "imagenet21k":
+            self.data_insize = 224
+        else:
+            assert False
 
     
     def __call__(self, img):
