@@ -127,6 +127,7 @@ def main(cfg):
 
     # ===========================================
     # 学習途中の記録があるなら読み込みを実行
+    # プログラム全体の実装が完了したらここも実装
     # ===========================================
 
 
@@ -137,7 +138,7 @@ def main(cfg):
     # ===========================================
     for epoch in range(cfg.optimizer.train.epoch):
 
-        # ここは必要か？
+        # ここは必要か？どうせ1エポックしか学習しないうえ，下手に学習順序変えると問題では？
         trainloader.batch_sampler.set_epoch(epoch=epoch)
         
         train(model=model, model2=model2, criterions=criterions, optimizer=optimizer, trainloader=trainloader, cfg=cfg)

@@ -184,7 +184,7 @@ class ImageNet21K(data.Dataset):
         meta["transid"] = i
         meta["filenames"] = fname
         meta["index"] = index
-        meta["labels"] = self.all_lables[index]
+        meta["label"] = self.all_lables[index]
 
         out = {
             "input": image,

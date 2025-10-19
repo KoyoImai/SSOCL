@@ -14,6 +14,35 @@ from dataloaders.batchsampler.base_buffer_batchsampler import BaseBufferBatchSam
 
 
 
+def tensorize_buffer(buffer):
+    
+    buffer_tensor = {}
+    for k in buffer[0]:
+        
+        tens_list = [s[k] for s in buffer]
+        if all(t is None for t in tens_list):
+            continue
+        if k == "fn":
+            continue
+        
+        dummy = [t for t in tens_list if t is not None][0] * 0.
+        tens_list = [t if t is not None else dummy for t in tens_list]
+        
+        try:
+            if isinstance(tens_list[0], torch.Tensor):
+                tens = torch.stack(tens_list)
+            elif isinstance(tens_list[0], (int, bool, float)):
+                tens = torch.tensor(tens_list)
+            else:
+                tens = torch.tensor(tens_list)
+            buffer_tensor[k] = tens
+        except Exception as e:
+            print(e)
+    
+    return buffer_tensor
+
+
+
 
 class MinRedBufferBatchSampler(BaseBufferBatchSampler):
 
@@ -51,6 +80,39 @@ class MinRedBufferBatchSampler(BaseBufferBatchSampler):
 
         z = sample_info['feature'][:].detach()
         sample_features = F.normalize(z, p=2, dim=-1)
+
+        def polyak_avg(val, avg, gamma):
+            return (1 - gamma) * val + gamma * avg
+        
+
+        for i in range(len(sample_index)):
+            db_idx = sample_index[i].item()         # データセットのインデックス
+            if db_idx in db2buff:
+                b = self.buffer[db2buff[db_idx]]    # バッファ
+                
+                if not b['seen']:
+                    b['feature'] = sample_features[i]
+                else:
+                    b['feature'] = F.normalize(polyak_avg(
+                        b['feature'], sample_features[i], self.gamma),
+                                               p=2,
+                                               dim=-1)
+                
+                b['label'] = sample_label[i]
+                b['seen'] = True
+            #print("b['label'] : ", b['label'])
+                
+        samples = [
+            self.buffer[db2buff[idx]] for idx in sample_index.tolist() if idx in db2buff
+        ]
+        
+        if not samples:
+            return {}
+        else:
+            return tensorize_buffer(samples)
+        
+
+
 
 
 

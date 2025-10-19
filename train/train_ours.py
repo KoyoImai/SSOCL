@@ -43,7 +43,7 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg):
         # 画像とラベルを獲得
         images = data["input"]
         meta = data["meta"]
-        labels = meta["labels"]
+        labels = meta["label"]
 
         # マルチクロップ画像の連結
         images = torch.cat(images, dim=0)
@@ -55,10 +55,10 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg):
 
         # model の forward 処理
         encoded, feature, z_proj = model(images)
-        if local_rank == 0:
-            print("encoded.shape: ", encoded.shape)
-            print("feature.shape: ", feature.shape)
-            print("z_proj.shape: ", z_proj.shape)
+        # if local_rank == 0:
+        #     print("encoded.shape: ", encoded.shape)
+        #     print("feature.shape: ", feature.shape)
+        #     print("z_proj.shape: ", z_proj.shape)
 
         # 特徴量平均計算
         z_list = z_proj.chunk(cfg.method.num_crops, dim=0)
@@ -70,11 +70,10 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg):
 
         # 損失の合算
         loss = cfg.method.lambda_mcc * loss_mcc + cfg.method.lambda_tcr * loss_tcr
-
-        if local_rank == 0:
-            print("loss_mcc: ", loss_mcc)
-            print("loss_tcr: ", loss_tcr)
-            print("loss: ", loss)
+        # if local_rank == 0:
+        #     print("loss_mcc: ", loss_mcc)
+        #     print("loss_tcr: ", loss_tcr)
+        #     print("loss: ", loss)
         
 
         # 最適化ステップ
@@ -86,12 +85,13 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg):
         # バッファ内のサンプルの情報を更新する
         with torch.no_grad():
 
+            # 平均特徴をバッファ内のサンプル情報として使用するため
             data["feature"] = z_avg.detach()
 
             if cfg.continual.buffer_type in ["minred"]:
-
                 stats = trainloader.batch_sampler.update_sample_stats(data)
-
+            else:  
+                assert False
 
 
 

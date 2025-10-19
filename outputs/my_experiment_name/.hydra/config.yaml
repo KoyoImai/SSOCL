@@ -25,6 +25,7 @@ optimizer:
     momentum: 0.9
     eta: 0.005
     batch_size: 25
+    epoch: 1
 continual:
   n_cls: 15813
   cls_per_task:
