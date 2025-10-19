@@ -200,7 +200,7 @@ class LinearBatchNorm(nn.Module):
 
 class ResNetProjectorHead(nn.Module):
     """backbone + projection head"""
-    def __init__(self, name='resnet50', seed=777, cfg=None):
+    def __init__(self, name='resnet50', seed=777, norm_p=2, cfg=None):
         super(ResNetProjectorHead, self).__init__()
 
         # seed値の決定
@@ -212,7 +212,9 @@ class ResNetProjectorHead(nn.Module):
         # モデル名と次元数を獲得
         model_fun, dim_in = model_dict[name]
         self.dim_in = dim_in
-        
+
+        self.norm_p = norm_p
+
         # Encoderの作成
         self.encoder = model_fun()
 
@@ -238,8 +240,13 @@ class ResNetProjectorHead(nn.Module):
 
 
     def forward(self, x, return_feat=False, norm=True):
+
+        encoded = self.encoder(x)
+        feature = self.head1(encoded)
+        z = F.normalize(self.head2(feature), p=self.norm_p)
         
-        assert False
+        
+        return encoded, feature, z
         
 
 

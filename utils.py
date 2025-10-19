@@ -1,8 +1,11 @@
 
-
+import os
 import random
 import numpy as np
+
+
 import torch
+from torchvision.utils import save_image
 
 
 
@@ -47,3 +50,49 @@ def seed_everything(seed):
     # torch.use_deterministic_algorithms(True)
 
     
+
+
+
+
+# ==========================================
+# ここから下は debug 用のプログラム
+# ==========================================
+def denorm(x, mean, std):
+    x = x.detach().cpu().clone()
+    for c, m, s in zip(range(x.shape[0]), mean, std):
+        x[c] = x[c] * s + m
+    return x.clamp(0, 1)
+
+
+def util_dataloader(model, trainloader, cfg):
+
+    for data in trainloader:
+
+        local_rank = cfg.ddp.local_rank
+        device = torch.device(f"cuda:{local_rank}")
+
+        mean=(0.5, 0.5, 0.5)
+        std=(0.5, 0.5, 0.5)
+
+        images = data["input"]
+        meta = data["meta"]
+
+        images = torch.cat(images, dim=0)
+
+        if torch.cuda.is_available():
+            images = images.to(device, non_blocking=True)
+
+        # if cfg.ddp.local_rank == 0:
+        #     print("images.shape: ", images.shape)   # images.shape:  torch.Size([500, 3, 224, 224])
+        # images[0:batch_size] が ミニバッチに対するデータ拡張の一つめ，images[batch_size:2*batch_size] はデータ拡張の二つめ
+        
+        # images[0]を保存
+        img0 = denorm(images[0], mean, std)
+        os.makedirs("outputs/vis", exist_ok=True)
+        save_image(img0, "outputs/vis/img0_denorm.png")
+
+        encoded, feature, z = model(images)
+        print("encoded.shape: ", encoded.shape)
+        print("feature.shape: ", feature.shape)
+        print("z.shape: ", z.shape)
+
