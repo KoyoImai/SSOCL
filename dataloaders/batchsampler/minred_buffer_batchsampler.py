@@ -32,7 +32,7 @@ class MinRedBufferBatchSampler(BaseBufferBatchSampler):
         super().__init__(buffer_size, repeat, dataset, sampler, batch_size)
 
 
-    def _evict_until_fit(self) -> None:
+    def _resize_buffer(self) -> None:
         """buffer_size を超えている場合，何かしらの指標をもとにデータを削除する．"""
         pass
 
@@ -51,7 +51,7 @@ class MinRedBufferBatchSampler(BaseBufferBatchSampler):
         # バッファサイズが全データ数よりも少ないかを確認
         assert self.buffer_size <= len(self.all_indices)
 
-        # 
+        # len(batch_sampler) を超えるまでミニバッチを作成して学習をする．
         while self.num_batches_yielded < len(self):
 
             # self.bufferにデータを追加
@@ -60,6 +60,7 @@ class MinRedBufferBatchSampler(BaseBufferBatchSampler):
 
             # バッファ内にデータが一定量たまるまで学習を行わずデータを溜め続ける
             if len(self.buffer) < self.buffer_size:
+                # self.num_batches_yielded += 1
                 continue
 
             # repeat 回繰り返してミニバッチを作成

@@ -50,8 +50,8 @@ continual:
                  30,  36,   60,  161, 33,  85,  46,  158, 49,  18]
   n_task: 100
   buffer_type: "minred"
-  buffer_size: 500
-  repeat: 10
+  buffer_size: 200
+  repeat: 3
 
 
 log:

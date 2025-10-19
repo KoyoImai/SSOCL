@@ -27,8 +27,20 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg):
     device = torch.device(f"cuda:{local_rank}")
 
 
-
+    print("len(trainloader): ", len(trainloader))
     for idx, data in enumerate(trainloader):
+
+        # 学習済みのバッチ数をカウント
+        batch_i = trainloader.batch_sampler.advance_batches_seen()
+        # init_batch_i = trainloader.batch_sampler.init_batch_i
+        # batch_i = batch_i + init_batch_i
+        print("len(trainloader.batch_sampler): ", len(trainloader.batch_sampler))
+        print("len(trainloader): ", len(trainloader))
+        print("batch_i: ", batch_i)
+
+
+
+        continue
         
         # 画像とラベルを獲得
         images = data["input"]
@@ -76,7 +88,6 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg):
 
 
 
-    assert False
 
 
 

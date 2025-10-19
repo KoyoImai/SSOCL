@@ -40,11 +40,13 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
         self.all_indices: List[int] = list(self.sampler)
         print("self.all_indices[:10]: ", self.all_indices[:10])   # self.all_indices[:10]:  [0, 4, 8, 12, 16, 20, 24, 28, 32, 36]
 
-        
+        # 学習の進行状況を確認するための変数
+        self.num_batches_seen: int = 0            # iter 内で進捗を数える用（学習ループから参照）
+        self.init_batch_i = 0
+
         # バッファの初期化
         self.buffer: List[Dict[str, Any]] = []
         self.db_head: int = 0                     # all_indices 上の「次に到着する」位置
-        self.num_batches_seen: int = 0            # iter 内で進捗を数える用（学習ループから参照）
         self.num_batches_yielded: int = 0         # 実際に yield したバッチ数
         self.batch_history: List[List[int]] = []  # 直近バッチの idx 記録（再開・デバッグ用）
         self.init_from_ckpt: bool = False         # ckpt 復元直後かどうかのフラグ
@@ -73,7 +75,12 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
     # バッファ内にそのデータの idx が存在するかの確認
     def in_buffer(self, idx: int) -> bool:
         return int(idx) in self.buffer
+    
 
+    def advance_batches_seen(self):
+
+        self.num_batches_seen += 1
+        return self.num_batches_seen
 
 
     # データストリームから到着したデータをバッファに格納する機能
@@ -138,7 +145,7 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
 
     # ---------- 抽象フック ----------
     @abstractmethod
-    def _evict_until_fit(self) -> None:
+    def _resize_buffer(self) -> None:
         """buffer_size を超えている場合，何かしらの指標をもとにデータを削除する．"""
         pass
 
