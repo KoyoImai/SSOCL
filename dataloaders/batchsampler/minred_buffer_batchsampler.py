@@ -62,13 +62,6 @@ class MinRedBufferBatchSampler(BaseBufferBatchSampler):
         super().__init__(buffer_size, repeat, dataset, sampler, batch_size)
 
 
-
-    def _resize_buffer(self) -> None:
-        """buffer_size を超えている場合，何かしらの指標をもとにデータを削除する．"""
-        pass
-
-
-
     def update_sample_stats(self, sample_info):
 
         # 辞書の作成（データセットのインデックス : self.bufferのインデックス）
@@ -112,7 +105,61 @@ class MinRedBufferBatchSampler(BaseBufferBatchSampler):
             return tensorize_buffer(samples)
         
 
+    def _resize_buffer(self, n) -> None:
+        """buffer_size を超えている場合，何かしらの指標をもとにデータを削除する．"""
 
+        n2rm = len(self.buffer) - n
+        if n2rm <= 0:
+            return
+
+        # 類似度が高いデータのインデックスを返す
+        def max_coverage_reductioin(x, n2rm):
+            
+            # 各データの特徴量の類似度を計算
+            sim = (torch.einsum('ad,bd->ab', x, x) + 1) / 2
+
+            # 同じデータ同士の類似度をマスクする
+            sim.fill_diagonal_(-10.)
+
+            # 削除データのインデックスを保存するリストの初期化
+            idx2rm = []
+
+            for i in range(n2rm):
+                neig_sim = sim.max(dim=1)[0]
+                most_similar_idx = torch.argmax(neig_sim)
+                idx2rm += [most_similar_idx.item()]
+                sim.index_fill_(0, most_similar_idx, -10.)
+                sim.index_fill_(1, most_similar_idx, -10.)
+
+            # idx2rmは，bufferにおける削除するデータのインデックスを格納している
+            return idx2rm
+
+        # self.bufferからインデックスとバッファの内容を取り出す
+        buffer = [(b, i) for i, b in enumerate(self.buffer) if b['seen']]
+
+        # 削除対象のデータ数が少ない場合，lifespanの値を元に削除データを決定
+        if len(buffer) < 2 * n2rm:
+            lifespans = [b['lifespan'] for b in self.buffer]
+            idx2rm = torch.tensor(lifespans).argsort(
+                descending=True)[:n2rm].tolist()
+        
+        else:
+
+            # バッファに保存しているデータの特徴量を取り出して結合
+            feats = torch.stack([b['feature'] for b, i in buffer], 0)
+            
+            # 冗長なデータのbufferにおけるインデックスを獲得
+            idx2rm = max_coverage_reductioin(feats, n2rm)
+
+            # 削除する冗長なデータのself.bufferにおけるインデックスを獲得
+            idx2rm = [buffer[i][1] for i in idx2rm]
+
+
+        # idx2rm（削除するデータのbufferでのインデックス）を整頓
+        idx2rm = set(idx2rm)
+
+        # バッファからデータを削除
+        self.buffer = [b for i, b in enumerate(self.buffer) if i not in idx2rm]
 
 
 
@@ -153,6 +200,10 @@ class MinRedBufferBatchSampler(BaseBufferBatchSampler):
                 self.batch_history += [batch_idx]
 
                 yield batch_idx
+            
+
+            # バッファからデータを削除
+            self.resize_buffer(self.buffer_size)
 
 
 
