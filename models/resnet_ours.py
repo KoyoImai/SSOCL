@@ -243,10 +243,10 @@ class ResNetProjectorHead(nn.Module):
 
         encoded = self.encoder(x)
         feature = self.head1(encoded)
-        z = F.normalize(self.head2(feature), p=self.norm_p)
+        z_proj = F.normalize(self.head2(feature), p=self.norm_p)
         
         
-        return encoded, feature, z
+        return encoded, feature, z_proj
         
 
 

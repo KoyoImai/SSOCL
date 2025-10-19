@@ -1,6 +1,10 @@
 method:
   name: ours
   num_crops: 5
+  lambda_mcc: 200
+  lambda_tcr: 1.0
+  temp_mcc: 0.07
+  eps_tcr: 0.2
 model:
   type: resnet50
   hidden_dim: 4096
@@ -127,7 +131,7 @@ continual:
   n_task: 100
   buffer_type: random
   buffer_size: 500
-  repeat: 1
+  repeat: 20
 log:
   name: null
   base: default

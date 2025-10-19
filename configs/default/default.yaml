@@ -4,6 +4,10 @@
 method: 
   name: "ours"
   num_crops: 5
+  lambda_mcc: 200
+  lambda_tcr: 1.0
+  temp_mcc: 0.07
+  eps_tcr: 0.2
 
 
 model:
@@ -25,7 +29,7 @@ dataset:
 
 optimizer:
   train:
-    learning_rate: 0.03
+    learning_rate: 0.001
     weight_decay: 1e-4
     momentum: 0.9
     eta: 0.005
@@ -45,9 +49,9 @@ continual:
                  140, 29,   124, 11,  29,  45,  25,  35,  79,  141, 
                  30,  36,   60,  161, 33,  85,  46,  158, 49,  18]
   n_task: 100
-  buffer_type: "random"
+  buffer_type: "minred"
   buffer_size: 500
-  repeat: 1
+  repeat: 10
 
 
 log:

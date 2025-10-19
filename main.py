@@ -136,7 +136,7 @@ def main(cfg):
     # 訓練を実行
     # ===========================================
     train(model=model, model2=model2, criterions=criterions, optimizer=optimizer, trainloader=trainloader, cfg=cfg)
-    
+
     
 
 

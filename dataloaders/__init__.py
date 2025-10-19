@@ -43,23 +43,18 @@ def make_sampler(cfg, dataset):
 
 def make_batchsampler(cfg, dataset, sampler):
 
-    batchsampler = MinRedBufferBatchSampler(buffer_size=cfg.continual.buffer_size, repeat=cfg.continual.repeat,
-                                            dataset=dataset, sampler=sampler, batch_size=cfg.optimizer.train.batch_size)
-    # print("len(dataset): ", len(dataset))
-    # print("len(sampler): ", len(sampler))
-    # print("len(batchsampler): ", len(batchsampler))
+    if cfg.continual.buffer_type == "minred":
+
+        batchsampler = MinRedBufferBatchSampler(buffer_size=cfg.continual.buffer_size, repeat=cfg.continual.repeat,
+                                                dataset=dataset, sampler=sampler, batch_size=cfg.optimizer.train.batch_size)
+
     
     return batchsampler
 
 
 
 
-    # def __init__(self,
-    #              buffer_size: int,
-    #              repeat: int,
-    #              dataset,
-    #              sampler: Sampler[int],
-    #              batch_size: int) -> None:
+
 
 
 

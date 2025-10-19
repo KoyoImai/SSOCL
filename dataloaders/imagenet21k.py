@@ -104,8 +104,8 @@ class ImageNet21K(data.Dataset):
             self.all_lables = torch.tensor(all_labels)
             assert self.all_files.shape[0] == self.all_lables.shape[0]
         else:
-            self.all_files = torch.stack([encode_filename(fn) for fn in all_files[:2000]])
-            self.all_lables = torch.tensor(all_labels[:2000])
+            self.all_files = torch.stack([encode_filename(fn) for fn in all_files[:3000]])
+            self.all_lables = torch.tensor(all_labels[:3000])
             assert self.all_files.shape[0] == self.all_lables.shape[0]
 
 
