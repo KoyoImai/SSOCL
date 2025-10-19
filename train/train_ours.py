@@ -93,6 +93,12 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg):
             else:  
                 assert False
 
+        # 後から分析可能にするため，学習途中のモデルを一定間隔で保存する
+        # （未実装）
+        
+
+        # 現在の学習状況を記録しておき，途中から再開可能にする．
+        # （未実装）
 
 
 

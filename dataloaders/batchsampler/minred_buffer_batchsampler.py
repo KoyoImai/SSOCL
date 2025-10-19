@@ -189,6 +189,9 @@ class MinRedBufferBatchSampler(BaseBufferBatchSampler):
                 # self.num_batches_yielded += 1
                 continue
 
+            # バッファからデータを削除
+            self._resize_buffer(self.buffer_size)
+
             # repeat 回繰り返してミニバッチを作成
             for j in range(self.repeat):
 
@@ -201,11 +204,6 @@ class MinRedBufferBatchSampler(BaseBufferBatchSampler):
 
                 yield batch_idx
             
-
-            # バッファからデータを削除
-            self.resize_buffer(self.buffer_size)
-
-
 
     def __len__(self) -> int:
         return len(self.sampler) * self.repeat // self.batch_size
