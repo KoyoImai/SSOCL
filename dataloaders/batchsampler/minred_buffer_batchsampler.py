@@ -6,6 +6,7 @@ from collections import deque
 
 
 import torch
+import torch.nn.functional as F
 
 
 
@@ -32,9 +33,24 @@ class MinRedBufferBatchSampler(BaseBufferBatchSampler):
         super().__init__(buffer_size, repeat, dataset, sampler, batch_size)
 
 
+
     def _resize_buffer(self) -> None:
         """buffer_size を超えている場合，何かしらの指標をもとにデータを削除する．"""
         pass
+
+
+
+    def update_sample_stats(self, sample_info):
+
+        # 辞書の作成（データセットのインデックス : self.bufferのインデックス）
+        db2buff = {b['idx']: i for i, b in enumerate(self.buffer)}
+
+        # 学習に使用したサンプルの情報を取り出す
+        sample_index = sample_info['meta']['index'].detach().cpu()    # データセットのインデックス
+        sample_label = sample_info['meta']['label']                   # データのラベル
+
+        z = sample_info['feature'][:].detach()
+        sample_features = F.normalize(z, p=2, dim=-1)
 
 
 
@@ -50,6 +66,7 @@ class MinRedBufferBatchSampler(BaseBufferBatchSampler):
 
         # バッファサイズが全データ数よりも少ないかを確認
         assert self.buffer_size <= len(self.all_indices)
+
 
         # len(batch_sampler) を超えるまでミニバッチを作成して学習をする．
         while self.num_batches_yielded < len(self):

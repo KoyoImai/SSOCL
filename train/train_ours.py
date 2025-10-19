@@ -33,15 +33,13 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg):
         # 学習済みのバッチ数をカウント
         batch_i = trainloader.batch_sampler.advance_batches_seen()
         # init_batch_i = trainloader.batch_sampler.init_batch_i
-        # batch_i = batch_i + init_batch_i
-        print("len(trainloader.batch_sampler): ", len(trainloader.batch_sampler))
-        print("len(trainloader): ", len(trainloader))
-        print("batch_i: ", batch_i)
+        # batch_i = batch_i + init_batch_
+
+        # 現在のタスクidを確認
+        task_id = trainloader.batch_sampler.task_id
+        print("task_id: ", task_id)
 
 
-
-        continue
-        
         # 画像とラベルを獲得
         images = data["input"]
         meta = data["meta"]
@@ -79,13 +77,20 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg):
             print("loss: ", loss)
         
 
-
         # 最適化ステップ
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
         
 
+        # バッファ内のサンプルの情報を更新する
+        with torch.no_grad():
+
+            data["feature"] = z_avg.detach()
+
+            if cfg.continual.buffer_type in ["minred"]:
+
+                stats = trainloader.batch_sampler.update_sample_stats(data)
 
 
 

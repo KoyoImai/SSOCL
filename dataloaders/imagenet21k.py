@@ -66,6 +66,7 @@ class ImageNet21K(data.Dataset):
                 ), '{} does not exist'.format(filelist)
 
         all_files = []
+        task_size = []
         for i in range(self.num_task):
 
             # 特定タスク用の filelist からパスを読み込む
@@ -74,11 +75,21 @@ class ImageNet21K(data.Dataset):
                 # 学習用データまでの全てのパスを取得
                 task_files = f.read().splitlines()
                 # print("task_files[0]: ", task_files[0])    # task_files[0]:  /home/kouyou/datasets/ImageNet21K/winter21_whole/n02689274/n02689274_12997.JPEG 0
+                
+                # データ分布の切り替わりを明確にするために， world_size と batch_size をもとにデータ数を削減
+                file_nums = math.floor(len(task_files) / (int(cfg.ddp.world_size) * cfg.optimizer.train.batch_size)) * (int(cfg.ddp.world_size) * cfg.optimizer.train.batch_size)
+                
+                task_files = task_files[:int(file_nums)]
+
+                # 後々に忘却率を測定するにはタスクの切り替わりを理解する必要があるので，各タスクのサイズをここで保存
+                # （あらかじめ， world_size でプロセス毎のタスクサイズに直しておく．）
+                task_size.append(len(task_files) // int(cfg.ddp.world_size))
 
             # タスクごとに一つの辞書に格納
             all_lines_dict[i] = task_files
         
         self.all_lines_dict = all_lines_dict
+        self.task_size = task_size
 
         # ==============================================================
         # 全ての filelist.txt に記述されたパスを連結
@@ -114,6 +125,23 @@ class ImageNet21K(data.Dataset):
         length = math.floor(self.all_files.shape[0] / (int(cfg.ddp.world_size) * cfg.optimizer.train.batch_size)) * (int(cfg.ddp.world_size) * cfg.optimizer.train.batch_size)
         self.all_files = self.all_files[:length]
         self.all_labels = self.all_lables[:length]
+
+
+        # ==============================================================
+        # タスク毎の切り替わりを示すリストを用意
+        # ==============================================================
+        task_period = []
+        sum = 0
+        for size in self.task_size:
+            
+            sum += size
+            task_period.append(sum)
+
+        # self.task_period[i] は i番目 のタスクの終了地点を示す．
+        # batch_sampler の　db_head と対応している．
+        self.task_period = task_period
+
+
 
 
         # ==============================================================

@@ -135,7 +135,12 @@ def main(cfg):
     # ===========================================
     # 訓練を実行
     # ===========================================
-    train(model=model, model2=model2, criterions=criterions, optimizer=optimizer, trainloader=trainloader, cfg=cfg)
+    for epoch in range(cfg.optimizer.train.epoch):
+
+        # ここは必要か？
+        trainloader.batch_sampler.set_epoch(epoch=epoch)
+        
+        train(model=model, model2=model2, criterions=criterions, optimizer=optimizer, trainloader=trainloader, cfg=cfg)
 
     
 

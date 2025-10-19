@@ -18,7 +18,7 @@ class StreamSampler(Sampler[int]):
                  dataset,
                  rank: Optional[int] = None,
                  world_size: Optional[int] = None,
-                 drop_last: bool = False,
+                 drop_last: bool = True,
                  base_seed: int = 777,
                  sharding: Literal["interleave", "chunk"] = "interleave",
                  start_index: int = 0,
@@ -60,9 +60,9 @@ class StreamSampler(Sampler[int]):
         # ==============================================================
         self.epoch = 0  # set_epoch() で更新予定
         
-        # Sampler内部のRNG（将来の摂動・シャッフル用に確保）
-        self._g = torch.Generator()
-        self._g.manual_seed(self.base_seed + self.rank)
+        # # Sampler内部のRNG（将来の摂動・シャッフル用に確保）
+        # self._g = torch.Generator()
+        # self._g.manual_seed(self.base_seed + self.rank)
 
 
         if self.sharding == "interleave":
@@ -87,6 +87,7 @@ class StreamSampler(Sampler[int]):
                 # 例: rank r は r, r+ws, r+2*ws, ...
                 produced = 0
                 for i in range(self.rank, self.dataset_len, self.world_size):
+                    
                     # drop_last=True の場合は事前計算した長さ分だけ供給
                     if self.drop_last and produced >= self._len_per_rank:
                         break
@@ -98,10 +99,6 @@ class StreamSampler(Sampler[int]):
         
         for idx in _iter_once():
             yield idx
-
-
-
-
 
 
     def __len__(self) -> int:
@@ -117,9 +114,7 @@ class StreamSampler(Sampler[int]):
 
         self.epoch = int(epoch)
 
-        C1, C2 = 10_000_019, 1_000_000_007  # 十分大きく互いに素な定数
-        new_seed = (self.base_seed + self.rank * C1 + self.epoch * C2) % (2**63 - 1)
-        self._g.manual_seed(new_seed)
+        # self._g.manual_seed(self.epoch)
 
 
 

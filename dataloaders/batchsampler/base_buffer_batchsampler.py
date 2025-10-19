@@ -40,9 +40,9 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
         self.all_indices: List[int] = list(self.sampler)
         print("self.all_indices[:10]: ", self.all_indices[:10])   # self.all_indices[:10]:  [0, 4, 8, 12, 16, 20, 24, 28, 32, 36]
 
-        # 学習の進行状況を確認するための変数
+        # 学習の進行状況を確認するための変数とリスト
         self.num_batches_seen: int = 0            # iter 内で進捗を数える用（学習ループから参照）
-        self.init_batch_i = 0
+        self.task_period = dataset.task_period
 
         # バッファの初期化
         self.buffer: List[Dict[str, Any]] = []
@@ -64,7 +64,8 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
             "idx": int(idx),
             "loss": None,           # 後でサンプル別 loss を記録
             "feature": None,        # 後で埋め込みベクトル等を記録
-            "label": None,          # 必要なら評価・統計用に付与（SSLでも保持するが，学習には使用しない）
+            "label": None,          # 必要なら評価・分析に使用（SSLでも保持するが，学習には使用しない）
+            "taskid": None,         # 必要なら評価・分析に使用
             "num_seen": 0,          # 何回バッファから取り出して学習したか
             "seen": False,          # 一度でも学習に使ったかのフラグ
             "lifespan": 0,          # バッファに保存されていた期間
@@ -77,13 +78,35 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
         return int(idx) in self.buffer
     
 
+    
+    # =======================================================
+    # 現在のデータストリームのタスクidを確認する関数
+    # =======================================================
+    def return_taskid(self):
+
+        for i, period in enumerate(self.task_period):
+
+            if self.db_head <= period:
+
+                return i
+
+
+        return i
+
+    
+    # =======================================================
+    # これまでに確認したミニバッチの数をカウントして返す
+    # =======================================================
     def advance_batches_seen(self):
 
         self.num_batches_seen += 1
         return self.num_batches_seen
 
 
+    
+    # =======================================================
     # データストリームから到着したデータをバッファに格納する機能
+    # =======================================================
     def add_to_buffer(self, n_new:int) -> List[int]:
 
         """
@@ -115,10 +138,16 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
         for b in self.buffer:
             b['lifespan'] += 1
 
+        # 現在のデータストリームの タスクid を確認
+        self.task_id = self.return_taskid()
+        
         
         return added
 
 
+    # ===============================================
+    # バッファからバッチサイズ分のデータを取り出す
+    # ===============================================
     def sample_k(self, buffer, batch_size):
         
         if batch_size < len(buffer):
@@ -127,6 +156,9 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
             return random.choices(buffer, k=batch_size)
 
 
+    # ===============================================
+    # ミニバッチの作成
+    # ===============================================
     def make_batch(self):
 
         # バッファからバッチサイズ分だけデータを取り出す
@@ -140,6 +172,13 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
         batch_idx = [b['idx'] for b in batch]
 
         return batch_idx
+
+
+    
+    def set_epoch(self, epoch):
+
+        self.epoch = epoch
+        self.sampler.set_epoch(epoch=epoch)
 
 
 
