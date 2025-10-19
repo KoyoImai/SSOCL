@@ -40,6 +40,7 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg):
         print("task_id: ", task_id)
 
 
+
         # 画像とラベルを獲得
         images = data["input"]
         meta = data["meta"]
@@ -95,7 +96,7 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg):
 
         # 後から分析可能にするため，学習途中のモデルを一定間隔で保存する
         # （未実装）
-        
+
 
         # 現在の学習状況を記録しておき，途中から再開可能にする．
         # （未実装）
