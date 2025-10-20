@@ -152,8 +152,7 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
     # ===============================================
     def state_dict(self):
 
-        batch_history = gather(torch.tensor(self.batch_history),
-                               self.distributed)
+        batch_history = gather(torch.tensor(self.batch_history), self.distributed)
         buffer = gather_buffer(self.buffer, self.distributed)
         return {
             'buffer': buffer,
