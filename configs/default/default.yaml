@@ -50,15 +50,15 @@ continual:
                  128, 230,  137, 45,  90,  87,  77,  302, 113, 100, 
                  140, 29,   124, 11,  29,  45,  25,  35,  79,  141, 
                  30,  36,   60,  161, 33,  85,  46,  158, 49,  18]
-  n_task: 2
+  n_task: 1
   buffer_type: "minred"
   buffer_size: 4096
-  repeat: 3
+  repeat: 2
 
 
 log:
   name: 
-  base: "default"
+  base: "default-v2"
   model: "model"
   result: "result"
   base_path: 

@@ -191,7 +191,7 @@ class CheckpointManager:
         return start_epoch
 
     # 処理時間を基にチェックポイントを保存する関数
-    def timed_checkpoint(self, save_dict=None):
+    def timed_checkpoint(self, save_dict=None, taskid=None):
         
         # 経過時間の測定
         t = time.time() - self.time
@@ -214,12 +214,10 @@ class CheckpointManager:
     
 
     # 学習の進捗を基にチェックポイントを保存する関数
-    def midway_epoch_checkpoint(self, epoch, batch_i, save_dict=None):
+    def midway_epoch_checkpoint(self, epoch, batch_i, save_dict=None, taskid=None):
         if ((batch_i + 1) / float(self.epoch_size) % self.save_freq) < (batch_i / float(self.epoch_size) % self.save_freq):
-            ckpt_fname = os.path.join(self.ckpt_dir,
-                                      'checkpoint_{:010.4f}.pth')
-            ckpt_fname = ckpt_fname.format(epoch +
-                                           batch_i / float(self.epoch_size))
+            ckpt_fname = os.path.join(self.ckpt_dir, 'checkpoint_{:010.4f}.pth')
+            ckpt_fname = ckpt_fname.format(epoch + batch_i / float(self.epoch_size))
 
             state = self.create_state_dict(save_dict)
             if self.rank == 0:
@@ -239,7 +237,7 @@ class CheckpointManager:
     # ------------------------------------------
     # main.py と train() から呼び出される関数
     # ------------------------------------------
-    def checkpoint(self, epoch, batch_i=None, save_dict=None):
+    def checkpoint(self, epoch, batch_i=None, save_dict=None, taskid=None):
 
         if batch_i is None:
             self.end_epoch_checkpoint(epoch, save_dict)

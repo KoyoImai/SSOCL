@@ -164,9 +164,7 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
 
     def load_state_dict(self, state_dict):
 
-        self.buffer = deque(reverse_tensorized_buffer(state_dict['buffer'],
-                                                      self.rank),
-                            maxlen=self.buffer_size)
+        self.buffer = deque(reverse_tensorized_buffer(state_dict['buffer'], self.rank), maxlen=self.buffer_size)
         self.db_head = state_dict['db_head']
         self.num_batches_seen = state_dict['num_batches_seen']
         self.num_batches_yielded = state_dict['num_batches_yielded']

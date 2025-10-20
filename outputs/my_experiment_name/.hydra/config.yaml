@@ -130,10 +130,10 @@ continual:
   - 158
   - 49
   - 18
-  n_task: 2
+  n_task: 1
   buffer_type: minred
   buffer_size: 4096
-  repeat: 3
+  repeat: 2
 log:
   name: null
   base: default

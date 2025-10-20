@@ -54,11 +54,10 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg, epoch, ck
         # 学習済みのバッチ数をカウント
         batch_i = trainloader.batch_sampler.advance_batches_seen()
         efective_epoch = epoch + (batch_i / len(trainloader))
-        
 
 
         # 現在のタスクidを確認
-        task_id = trainloader.batch_sampler.task_id
+        task_id = trainloader.batch_sampler.return_taskid()
 
 
         # 画像とラベルを獲得
@@ -128,10 +127,6 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg, epoch, ck
 
 
 
-
-
-
-
         # 後から分析可能にするため，学習途中のモデルを一定間隔で保存する
         if ckpt_manager is not None:
             ckpt_manager.checkpoint(epoch=epoch,
@@ -141,12 +136,6 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg, epoch, ck
                                         'batch_i': batch_i,
                                         'arch': cfg.model.type,
                                     })
-
-
-
-        # 現在の学習状況を記録しておき，途中から再開可能にする．
-        # （未実装）
-
 
 
         # measure elapsed time

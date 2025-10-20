@@ -97,10 +97,8 @@ def main(cfg):
 
     # print 処理を master_node に限定する
     if cfg.ddp.use_ddp and (cfg.ddp.local_rank != 0):
-
         def print_pass(*args, **kwargs):
             pass
-            
         builtins.print = print_pass
     
     if cfg.ddp.local_rank is not None:
@@ -168,6 +166,8 @@ def main(cfg):
 
     if cfg.log.resume:
         cfg.optimizer.train.start_epoch = ckpt_manager.resume()
+
+        # print("trainloader.batch_sampler.buffer[0:5]['idx']: ", trainloader.batch_sampler.buffer[0]['idx'])
 
 
 
