@@ -6,11 +6,14 @@ import builtins
 import numpy as np
 
 
+
 import torch
 import torch.nn as nn
 import torch.distributed as dist
 from torch.utils.data import DataLoader
 from torchvision.utils import save_image
+from torch.cuda.amp import GradScaler
+
 
 
 from utils import seed_everything, CheckpointManager
@@ -144,6 +147,23 @@ def main(cfg):
 
 
 
+    # =========================
+    # AMP: GradScaler 準備
+    # =========================
+    use_amp = bool(getattr(cfg, "amp", None) and cfg.amp.use_amp)
+    use_bf16 = use_amp and (str(cfg.amp.dtype).lower() == "bf16")
+    use_fp16 = use_amp and (str(cfg.amp.dtype).lower() == "fp16")
+    scaler = None
+    if use_fp16 and bool(getattr(cfg.amp, "grad_scaler", True)):
+        scaler = GradScaler(enabled=True)
+    # bf16 はスケーリング不要（数値範囲が広い）
+
+    # 参考: TF32 を許可（速度重視、学習再現性は若干変わる場合あり）
+    torch.backends.cuda.matmul.allow_tf32 = True
+    torch.backends.cudnn.allow_tf32 = True
+
+
+
     # ===========================================
     # 学習途中の記録があるなら読み込みを実行
     # プログラム全体の実装が完了したらここも実装
@@ -180,7 +200,7 @@ def main(cfg):
         trainloader.batch_sampler.set_epoch(epoch=epoch)
         
         train(model=model, model2=model2, criterions=criterions, optimizer=optimizer,
-              trainloader=trainloader, cfg=cfg, epoch=epoch, ckpt_manager=ckpt_manager, writer=writer)
+              trainloader=trainloader, cfg=cfg, epoch=epoch, ckpt_manager=ckpt_manager, writer=writer, scaler=scaler)
 
     
 

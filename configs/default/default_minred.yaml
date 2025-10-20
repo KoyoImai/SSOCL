@@ -2,18 +2,13 @@
 
 # 手法名
 method: 
-  name: "ours"
-  num_crops: 5
-  lambda_mcc: 200
-  lambda_tcr: 1.0
-  temp_mcc: 0.07
-  eps_tcr: 0.2
+  name: "minred"
 
 
 model:
   type: "resnet50"
-  hidden_dim: 4096
-  output_dim: 1024
+  hidden_dim: 2048
+  output_dim: 512
 
 
 dataset:
@@ -33,7 +28,7 @@ optimizer:
     weight_decay: 1e-4
     momentum: 0.9
     eta: 0.005
-    batch_size: 32
+    batch_size: 128
     start_epoch: 0
     epochs: 1
     scheduler_type: "cos"
@@ -52,7 +47,7 @@ continual:
                   28,   26,   31,   46,  105,   69,    43,  176,   49,   33, 
                   40,   43,   25,   49,   16,   90,   115,  131,   34,   52, 
                   52,   13,   17,  117,  243,  116,    16,   31,  139,  101]
-  n_task: 1
+  n_task: 100
   buffer_type: "minred"
   buffer_size: 65536
   repeat: 3
@@ -78,11 +73,6 @@ ddp:
   local_rank: 
   use_ddp: 
   world_size: 
-
-amp:
-  use_amp: True
-  dtype: "fp32"        # "fp16" か "bf16"（A100/H100 や RTX 40xx は bf16 推奨）
-  grad_scaler: true    # bf16 のときは自動的に無視されます
 
 
 seed: 777
