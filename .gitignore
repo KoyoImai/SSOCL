@@ -1,6 +1,7 @@
 logs
 outputs
 
+
 __pycache__/
 *.pyc
 *.pkl
@@ -8,4 +9,9 @@ __pycache__/
 *.pt
 *.log
 .vscode/
+.filelists
+*.txt
 *.pdf
+*.csv
+
+
