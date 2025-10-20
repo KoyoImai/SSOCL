@@ -3,7 +3,7 @@
 # 手法名
 method: 
   name: "ours"
-  num_crops: 5
+  num_crops: 20
   lambda_mcc: 200
   lambda_tcr: 1.0
   temp_mcc: 0.07
@@ -18,9 +18,9 @@ model:
 
 dataset:
   type: "imagenet21k"
-  num_classes: 15813
+  num_classes: 13971
   data_folder: '/home/kouyou/datasets/'
-  filelist: "/home/kouyou/datasets/ImageNet21K/filelists/kmeans_clustering_100/filelists/similar_order"
+  filelist: "/home/kouyou/make_dataset/kmeans_clustering_100/filelists/similar_order"
   size: 224
   drop_last: True
   start_index: 0
@@ -33,7 +33,7 @@ optimizer:
     weight_decay: 1e-4
     momentum: 0.9
     eta: 0.005
-    batch_size: 64
+    batch_size: 128
     start_epoch: 0
     epochs: 1
     scheduler_type: "cos"
@@ -41,26 +41,36 @@ optimizer:
 
 
 continual:
-  n_cls: 15813
-  cls_per_task: [92,  323,  217, 58,  942, 410, 105, 161, 142, 29,
-                 132, 265,  175, 214, 551, 231, 253, 244, 243, 387,
-                 156, 189,  54,  83,  86,  112, 872, 187, 78,  22,
-                 97,  117,  145, 70,  67,  280, 149, 91,  158, 67,
-                 36,  49,   48,  99,  235, 42,  49,  25,  56,  109, 
-                 642, 1062, 428, 164, 162, 37,  58,  114, 150, 33, 
-                 113, 22,   32,  400, 100, 56,  116, 92,  233, 154, 
-                 128, 230,  137, 45,  90,  87,  77,  302, 113, 100, 
-                 140, 29,   124, 11,  29,  45,  25,  35,  79,  141, 
-                 30,  36,   60,  161, 33,  85,  46,  158, 49,  18]
-  n_task: 1
+  n_cls: 13971
+  # cls_per_task: [92,  323,  217, 58,  942, 410, 105, 161, 142, 29,
+  #                132, 265,  175, 214, 551, 231, 253, 244, 243, 387,
+  #                156, 189,  54,  83,  86,  112, 872, 187, 78,  22,
+  #                97,  117,  145, 70,  67,  280, 149, 91,  158, 67,
+  #                36,  49,   48,  99,  235, 42,  49,  25,  56,  109, 
+  #                642, 1062, 428, 164, 162, 37,  58,  114, 150, 33, 
+  #                113, 22,   32,  400, 100, 56,  116, 92,  233, 154, 
+  #                128, 230,  137, 45,  90,  87,  77,  302, 113, 100, 
+  #                140, 29,   124, 11,  29,  45,  25,  35,  79,  141, 
+  #                30,  36,   60,  161, 33,  85,  46,  158, 49,  18]
+  cls_per_task: [150,  419,  122,  876,  432,  228,  1623,  586,  395,  147,
+                  36,   92,  168,  276,  327,   67,   215,   52,  124,   21, 
+                  24,   97,  133,  139,   80,  427,    53,  221,   35,  261,
+                 133,   52,   75,   95,   88,  180,   138,   31,  187,   44, 
+                 124,  135,   54,   41,   65,  406,   202,   64,   64,   46, 
+                  98,    7,   53,  178,  111,  190,    56,  103,  198,  146, 
+                 122,  159,   26,   64,   99,   15,    68,   21,  139,   22, 
+                  28,   26,   31,   46,  105,   69,    43,  176,   49,   33, 
+                  40,   43,   25,   49,   16,   90,   115,  131,   34,   52, 
+                  52,   13,   17,  117,  243,  116,    16,   31,  139,  101]
+  n_task: 100
   buffer_type: "minred"
-  buffer_size: 4096
-  repeat: 2
+  buffer_size: 65536
+  repeat: 3
 
 
 log:
   name: 
-  base: "default-v2"
+  base: "baseline"
   model: "model"
   result: "result"
   base_path: 
@@ -70,7 +80,7 @@ log:
   result_path: 
   save_freq: 0.005
   save_freq_mints: 20
-  print_freq: 5
+  print_freq: 20
   resume: True
 
 
@@ -81,7 +91,7 @@ ddp:
 
 
 seed: 777
-date: 2025_1004
+date: 2025_1020
 workers: 8
 
 
@@ -90,4 +100,4 @@ debug: False
 
 hydra:
   run:
-    dir: outputs/my_experiment_name
+    dir: outputs/ours_baseline
