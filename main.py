@@ -2,6 +2,7 @@
 import os
 import hydra
 import random
+import builtins
 import numpy as np
 
 
@@ -62,7 +63,6 @@ def main(cfg):
     # ===========================================
     seed_everything(cfg.seed)
 
-
     # logの名前
     cfg.log.name = f"{cfg.log.base}_{cfg.method.name}_{cfg.continual.buffer_type}{cfg.continual.buffer_size}_{cfg.dataset.type}_seed{cfg.seed}_date{cfg.date}"
 
@@ -75,7 +75,7 @@ def main(cfg):
 
 
     # ===========================================
-    # DDP
+    # DDP 関連の処理を時効
     # ===========================================
     # DDP 使用の環境変数
     local_rank = int(os.environ["LOCAL_RANK"])
@@ -90,9 +90,23 @@ def main(cfg):
     if use_ddp:
         dist.init_process_group(backend='nccl')
         torch.cuda.set_device(local_rank)
-        print("dist.get_world_size(): ", dist.get_world_size())
+        # print("dist.get_world_size(): ", dist.get_world_size())
     else:
         assert False
+
+
+    # print 処理を master_node に限定する
+    if cfg.ddp.use_ddp and (cfg.ddp.local_rank != 0):
+
+        def print_pass(*args, **kwargs):
+            pass
+            
+        builtins.print = print_pass
+    
+    if cfg.ddp.local_rank is not None:
+        print("Use GPU: {} for training".format(cfg.ddp.local_rank))
+
+
 
 
     # ===========================================
@@ -158,7 +172,8 @@ def main(cfg):
         # ここは必要か？どうせ1エポックしか学習しないうえ，下手に学習順序変えると問題では？
         trainloader.batch_sampler.set_epoch(epoch=epoch)
         
-        train(model=model, model2=model2, criterions=criterions, optimizer=optimizer, trainloader=trainloader, cfg=cfg)
+        train(model=model, model2=model2, criterions=criterions, optimizer=optimizer,
+              trainloader=trainloader, cfg=cfg, epoch=epoch, ckpt_manager=ckpt_manager)
 
     
 

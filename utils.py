@@ -15,7 +15,10 @@ from torchvision.utils import save_image
 # ==========================================
 class AverageMeter(object):
     """Computes and stores the average and current value"""
-    def __init__(self):
+    def __init__(self, name, fmt=':f', tbname=''):
+        self.name = name
+        self.tbname = tbname
+        self.fmt = fmt
         self.reset()
 
     def reset(self):
@@ -29,6 +32,38 @@ class AverageMeter(object):
         self.sum += val * n
         self.count += n
         self.avg = self.sum / self.count
+
+    def __str__(self):
+        fmtstr = '{name} {val' + self.fmt + '} ({avg' + self.fmt + '})'
+        return fmtstr.format(**self.__dict__)
+
+
+class WindowAverageMeter(object):
+    """Computes and stores the average and current value"""
+    def __init__(self, name, k=250, fmt=':f', tbname=''):
+        self.name = name
+        self.tbname = tbname
+        self.fmt = fmt
+        self.k = k
+        self.reset()
+
+    def reset(self):
+        from collections import deque
+        self.vals = deque(maxlen=self.k)
+        self.counts = deque(maxlen=self.k)
+        self.val = 0
+        self.avg = 0
+
+    def update(self, val, n=1):
+        self.vals.append(val)
+        self.counts.append(n)
+        self.val = val
+        self.avg = sum([v * c for v, c in zip(self.vals, self.counts)]) / sum(
+            self.counts)
+
+    def __str__(self):
+        fmtstr = '{name} {val' + self.fmt + '} ({avg' + self.fmt + '})'
+        return fmtstr.format(**self.__dict__)
 
 
         
@@ -62,6 +97,15 @@ def seed_everything(seed):
 # ==========================================
 # 学習途中の記録保存・再開用プログラム
 # ==========================================
+def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
+    distributed = torch.distributed.is_available(
+    ) and torch.distributed.is_initialized()
+    if not distributed or (distributed and torch.distributed.get_rank() == 0):
+        torch.save(state, filename)
+        print("=> saved checkpoint '{}' (epoch {})".format(
+            filename, state['epoch']))
+        
+
 class CheckpointManager:
     def __init__(self,
                  modules,
@@ -104,6 +148,65 @@ class CheckpointManager:
                 ckpt_fname, checkpoint['epoch']))
         
         return start_epoch
+
+    # 処理時間を基にチェックポイントを保存する関数
+    def timed_checkpoint(self, save_dict=None):
+        
+        # 経過時間の測定
+        t = time.time() - self.time
+        
+        # 全プロセスの経過時間と集約
+        t_all = [t for _ in range(self.world_size)]
+        if self.world_size > 1:
+            torch.distributed.all_gather_object(t_all, t)
+
+        # 全プロセスで最も経過時間が短かったプロセスを基に現状を保存するか決定
+        if min(t_all) > self.save_freq_mints * 60:
+
+            # 時間の更新，保存パスの作成
+            self.time = time.time()
+            ckpt_fname = os.path.join(self.ckpt_dir, 'checkpoint_latest.pth')
+
+            state = self.create_state_dict(save_dict)
+            if self.rank == 0:
+                save_checkpoint(state, is_best=False, filename=ckpt_fname)
+    
+
+    # 学習の進捗を基にチェックポイントを保存する関数
+    def midway_epoch_checkpoint(self, epoch, batch_i, save_dict=None):
+        if ((batch_i + 1) / float(self.epoch_size) % self.save_freq) < (batch_i / float(self.epoch_size) % self.save_freq):
+            ckpt_fname = os.path.join(self.ckpt_dir,
+                                      'checkpoint_{:010.4f}.pth')
+            ckpt_fname = ckpt_fname.format(epoch +
+                                           batch_i / float(self.epoch_size))
+
+            state = self.create_state_dict(save_dict)
+            if self.rank == 0:
+                save_checkpoint(state, is_best=False, filename=ckpt_fname)
+                ckpt_fname = os.path.join(self.ckpt_dir, 'checkpoint_latest.pth')
+                save_checkpoint(state, is_best=False, filename=ckpt_fname)
+
+    
+    def create_state_dict(self, save_dict):
+        state = {k: self.modules[k].state_dict() for k in self.modules}
+        if save_dict is not None:
+            state.update(save_dict)
+        return state
+    
+
+    # ------------------------------------------
+    # main.py と train() から呼び出される関数
+    # ------------------------------------------
+    def checkpoint(self, epoch, batch_i=None, save_dict=None):
+
+        if batch_i is None:
+            self.end_epoch_checkpoint(epoch, save_dict)
+        else:
+            if batch_i % 1 == 0:
+                self.timed_checkpoint(save_dict)
+            self.midway_epoch_checkpoint(epoch, batch_i, save_dict=save_dict)
+
+
 
 
 

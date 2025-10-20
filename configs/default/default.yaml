@@ -33,7 +33,7 @@ optimizer:
     weight_decay: 1e-4
     momentum: 0.9
     eta: 0.005
-    batch_size: 25
+    batch_size: 64
     start_epoch: 0
     epochs: 1
 
@@ -66,9 +66,10 @@ log:
   explog_path: 
   mem_path: 
   result_path: 
-  save_freq: 1
+  save_freq: 0.1
   save_freq_mints: 20
-  resume: True
+  print_freq: 10
+  resume: False
 
 
 ddp:
@@ -80,7 +81,7 @@ ddp:
 seed: 777
 date: 2025_1004
 workers: 8
-print_freq: 10
+
 
 debug: False
 

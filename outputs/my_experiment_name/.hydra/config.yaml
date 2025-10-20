@@ -24,7 +24,7 @@ optimizer:
     weight_decay: 0.0001
     momentum: 0.9
     eta: 0.005
-    batch_size: 25
+    batch_size: 64
     start_epoch: 0
     epochs: 1
 continual:
@@ -144,9 +144,9 @@ log:
   explog_path: null
   mem_path: null
   result_path: null
-  save_freq: 1
+  save_freq: 0.1
   save_freq_mints: 20
-  resume: true
+  resume: false
 ddp:
   local_rank: null
   use_ddp: null

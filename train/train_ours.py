@@ -8,7 +8,7 @@ from utils import AverageMeter
 
 
 
-def train_ours(model, model2, criterions, optimizer, trainloader, cfg):
+def train_ours(model, model2, criterions, optimizer, trainloader, cfg, epoch, ckpt_manager=None):
 
     # model を trainモード，model2 を evalモード に変更
     model.train()
@@ -37,7 +37,8 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg):
 
         # 現在のタスクidを確認
         task_id = trainloader.batch_sampler.task_id
-        print("task_id: ", task_id)
+        if local_rank == 0:
+            print("task_id: ", task_id)
 
 
 
@@ -95,11 +96,24 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg):
                 assert False
 
         # 後から分析可能にするため，学習途中のモデルを一定間隔で保存する
-        # （未実装）
+        if ckpt_manager is not None:
+            ckpt_manager.checkpoint(epoch=epoch,
+                                    batch_i=batch_i,
+                                    save_dict={
+                                        'epoch': epoch,
+                                        'batch_i': batch_i,
+                                        'arch': cfg.model.type,
+                                    })
+
 
 
         # 現在の学習状況を記録しておき，途中から再開可能にする．
         # （未実装）
+
+
+        # 学習状況の表示
+        if batch_i % cfg.log.print_freq == 0:
+            assert False
 
 
 

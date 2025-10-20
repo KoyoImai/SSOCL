@@ -57,9 +57,10 @@ class MinRedBufferBatchSampler(BaseBufferBatchSampler):
                  dataset,
                  sampler,
                  batch_size,
+                 rank,
                 ) -> None:
         
-        super().__init__(buffer_size, repeat, dataset, sampler, batch_size)
+        super().__init__(buffer_size, repeat, dataset, sampler, batch_size, rank)
 
 
     def update_sample_stats(self, sample_info):

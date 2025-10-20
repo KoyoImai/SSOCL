@@ -8,6 +8,69 @@ import random
 from abc import ABC, abstractmethod
 
 
+import torch
+from torch.nn import functional as F
+
+
+
+
+def gather(tensor, distributed=False):
+    if not distributed:
+        return [tensor]
+    else:
+        world_size = torch.distributed.get_world_size()
+        size = tuple(tensor.shape)
+        size_all = [size for _ in range(world_size)]
+        torch.distributed.all_gather_object(size_all, size)
+
+        tensor = tensor.cuda()
+        max_sz = max([sz[0] for sz in size_all])
+        expand_sz = tuple([max_sz] + list(size)[1:])
+        tensor_all = [
+            torch.zeros(size=expand_sz, dtype=tensor.dtype).cuda()
+            for _ in range(world_size)
+        ]
+        if tensor.shape[0] < max_sz:
+            pad = [0] * (2 * len(size))
+            pad[-1] = max_sz - tensor.shape[0]
+            tensor = F.pad(tensor, pad=pad)
+        torch.distributed.all_gather(tensor_all, tensor)
+        return [
+            tensor_all[r][:size_all[r][0]].cpu() for r in range(world_size)
+        ]
+
+
+def tensorize_buffer(buffer):
+    buffer_tensor = {}
+    for k in buffer[0]:
+        tens_list = [s[k] for s in buffer]
+        if all(t is None for t in tens_list):
+            continue
+        dummy = [t for t in tens_list if t is not None][0] * 0.
+        tens_list = [t if t is not None else dummy for t in tens_list]
+        try:
+            if isinstance(tens_list[0], torch.Tensor):
+                tens = torch.stack(tens_list)
+            elif isinstance(tens_list[0], (int, bool, float)):
+                tens = torch.tensor(tens_list)
+            else:
+                tens = torch.tensor(tens_list)
+            buffer_tensor[k] = tens
+        except Exception as e:
+            print(tens_list)
+            print(e)
+    return buffer_tensor
+
+
+def gather_buffer(buffer, distributed=False):
+    buffer_tensor = tensorize_buffer(buffer)
+    for k in buffer_tensor:
+        buffer_tensor[k] = gather(buffer_tensor[k], distributed)
+    return buffer_tensor
+
+
+
+
 
 class BaseBufferBatchSampler(Sampler[List[int]], ABC):
 
@@ -22,7 +85,8 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
                  repeat: int,
                  dataset,
                  sampler: Sampler[int],
-                 batch_size: int) -> None:
+                 batch_size: int,
+                 rank: int = None) -> None:
         
         # 基本的なエラー確認
         assert buffer_size > 0
@@ -39,6 +103,15 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
 
         self.all_indices: List[int] = list(self.sampler)
         print("self.all_indices[:10]: ", self.all_indices[:10])   # self.all_indices[:10]:  [0, 4, 8, 12, 16, 20, 24, 28, 32, 36]
+
+
+        # DDP関連
+        self.distributed = torch.distributed.is_available(
+        ) and torch.distributed.is_initialized()
+        if rank is None:
+            rank = torch.distributed.get_rank() if self.distributed else 0
+        self.rank = rank
+
 
         # 学習の進行状況を確認するための変数とリスト
         self.num_batches_seen: int = 0            # iter 内で進捗を数える用（学習ループから参照）
@@ -65,8 +138,16 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
     # ===============================================
     def state_dict(self):
 
-        assert False
-    
+        batch_history = gather(torch.tensor(self.batch_history),
+                               self.distributed)
+        buffer = gather_buffer(self.buffer, self.distributed)
+        return {
+            'buffer': buffer,
+            'db_head': self.db_head,
+            'num_batches_seen': self.num_batches_seen,
+            'num_batches_yielded': self.num_batches_yielded,
+            'batch_history': batch_history
+        }
 
     def load_state_dict(self, state_dict):
 
@@ -171,8 +252,8 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
         batch = self.sample_k(self.buffer, self.batch_size)
 
         # print("batch: ", batch)
-        print("len(self.buffer): ", len(self.buffer))
-        print("len(batch): ", len(batch))
+        # print("len(self.buffer): ", len(self.buffer))
+        # print("len(batch): ", len(batch))
 
         # データセットの idx を取り出す
         batch_idx = [b['idx'] for b in batch]

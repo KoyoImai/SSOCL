@@ -46,7 +46,7 @@ def make_batchsampler(cfg, dataset, sampler):
     if cfg.continual.buffer_type == "minred":
 
         batchsampler = MinRedBufferBatchSampler(buffer_size=cfg.continual.buffer_size, repeat=cfg.continual.repeat,
-                                                dataset=dataset, sampler=sampler, batch_size=cfg.optimizer.train.batch_size)
+                                                dataset=dataset, sampler=sampler, batch_size=cfg.optimizer.train.batch_size, rank=cfg.ddp.local_rank)
 
     
     return batchsampler
