@@ -171,6 +171,11 @@ class MinRedBufferBatchSampler(BaseBufferBatchSampler):
             self.num_batches_seen = 0
             self.num_batches_yielded = 0
             self.batch_history = deque(maxlen=128)
+
+
+        # モデルが未確認のミニバッチを再度渡す
+        for i in range(self.num_batches_yielded - self.num_batches_seen, 0, -1):
+            yield self.batch_history[-i]
         
 
         # バッファサイズが全データ数よりも少ないかを確認
@@ -203,6 +208,9 @@ class MinRedBufferBatchSampler(BaseBufferBatchSampler):
                 self.batch_history += [batch_idx]
 
                 yield batch_idx
+        
+        # 学習途中からの再開フラグを False に変更
+        self.init_from_ckpt = False
             
 
     def __len__(self) -> int:

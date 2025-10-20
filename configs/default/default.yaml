@@ -34,7 +34,8 @@ optimizer:
     momentum: 0.9
     eta: 0.005
     batch_size: 25
-    epoch: 1
+    start_epoch: 0
+    epochs: 1
 
 
 continual:
@@ -49,7 +50,7 @@ continual:
                  128, 230,  137, 45,  90,  87,  77,  302, 113, 100, 
                  140, 29,   124, 11,  29,  45,  25,  35,  79,  141, 
                  30,  36,   60,  161, 33,  85,  46,  158, 49,  18]
-  n_task: 100
+  n_task: 2
   buffer_type: "minred"
   buffer_size: 200
   repeat: 3
@@ -65,7 +66,9 @@ log:
   explog_path: 
   mem_path: 
   result_path: 
-  resume: 
+  save_freq: 1
+  save_freq_mints: 20
+  resume: True
 
 
 ddp:
@@ -79,7 +82,7 @@ date: 2025_1004
 workers: 8
 print_freq: 10
 
-debug: True
+debug: False
 
 
 hydra:

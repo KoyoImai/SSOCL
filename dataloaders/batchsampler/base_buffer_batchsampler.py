@@ -57,6 +57,22 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
 
 
 
+
+
+
+    # ===============================================
+    # 学習途中の記録，再開時の読み込み
+    # ===============================================
+    def state_dict(self):
+
+        assert False
+    
+
+    def load_state_dict(self, state_dict):
+
+        assert False
+
+
     # バッファにデータを格納するために，保存する情報の体裁を整えるための関数
     def _init_entry(self, idx: int) -> Dict[str, Any]:
 
@@ -77,20 +93,14 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
     def in_buffer(self, idx: int) -> bool:
         return int(idx) in self.buffer
     
-
     
     # =======================================================
     # 現在のデータストリームのタスクidを確認する関数
     # =======================================================
     def return_taskid(self):
-
         for i, period in enumerate(self.task_period):
-
             if self.db_head <= period:
-
                 return i
-
-
         return i
 
     
@@ -103,7 +113,6 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
         return self.num_batches_seen
 
 
-    
     # =======================================================
     # データストリームから到着したデータをバッファに格納する機能
     # =======================================================
@@ -115,7 +124,7 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
         """
 
         if n_new < 0:
-            return []
+            return True, []
         
         added: List[int] = []
 
@@ -142,11 +151,11 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
         self.task_id = self.return_taskid()
         
         
-        return added
+        return False, added
 
 
     # ===============================================
-    # バッファからバッチサイズ分のデータを取り出す
+    # ミニバッチの作成
     # ===============================================
     def sample_k(self, buffer, batch_size):
         
@@ -156,9 +165,6 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
             return random.choices(buffer, k=batch_size)
 
 
-    # ===============================================
-    # ミニバッチの作成
-    # ===============================================
     def make_batch(self):
 
         # バッファからバッチサイズ分だけデータを取り出す

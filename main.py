@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader
 from torchvision.utils import save_image
 
 
-from utils import seed_everything
+from utils import seed_everything, CheckpointManager
 from models import make_model
 from losses import make_criterion
 from optimizers import make_optimizer
@@ -129,14 +129,31 @@ def main(cfg):
     # 学習途中の記録があるなら読み込みを実行
     # プログラム全体の実装が完了したらここも実装
     # ===========================================
+    # cfg.log.model_path
+    modules = {
+        'state_dict': model,
+        'optimer': optimizer,
+        'sampler': trainloader.batch_sampler
+    }
 
+    ckpt_manager = CheckpointManager(
+        modules=modules,
+        ckpt_dir=cfg.log.model_path,
+        epoch_size=len(trainloader),
+        epochs=cfg.optimizer.train.epochs,
+        save_freq=cfg.log.save_freq,
+        save_freq_mints=cfg.log.save_freq_mints
+    )
+
+    if cfg.log.resume:
+        cfg.optimizer.train.start_epoch = ckpt_manager.resume()
 
 
 
     # ===========================================
     # 訓練を実行
     # ===========================================
-    for epoch in range(cfg.optimizer.train.epoch):
+    for epoch in range(cfg.optimizer.train.epochs):
 
         # ここは必要か？どうせ1エポックしか学習しないうえ，下手に学習順序変えると問題では？
         trainloader.batch_sampler.set_epoch(epoch=epoch)

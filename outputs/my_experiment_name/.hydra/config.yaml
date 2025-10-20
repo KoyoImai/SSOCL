@@ -25,7 +25,8 @@ optimizer:
     momentum: 0.9
     eta: 0.005
     batch_size: 25
-    epoch: 1
+    start_epoch: 0
+    epochs: 1
 continual:
   n_cls: 15813
   cls_per_task:
@@ -129,7 +130,7 @@ continual:
   - 158
   - 49
   - 18
-  n_task: 100
+  n_task: 2
   buffer_type: minred
   buffer_size: 200
   repeat: 3
@@ -143,7 +144,9 @@ log:
   explog_path: null
   mem_path: null
   result_path: null
-  resume: null
+  save_freq: 1
+  save_freq_mints: 20
+  resume: true
 ddp:
   local_rank: null
   use_ddp: null
@@ -152,4 +155,4 @@ seed: 777
 date: 20251004
 workers: 8
 print_freq: 10
-debug: true
+debug: false

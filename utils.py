@@ -1,5 +1,6 @@
 
 import os
+import time
 import random
 import numpy as np
 
@@ -9,6 +10,9 @@ from torchvision.utils import save_image
 
 
 
+# ==========================================
+# 学習記録
+# ==========================================
 class AverageMeter(object):
     """Computes and stores the average and current value"""
     def __init__(self):
@@ -28,7 +32,9 @@ class AverageMeter(object):
 
 
         
-
+# ==========================================
+# seed値の固定
+# ==========================================
 def seed_everything(seed):
     # Python 内部のハッシュシードを固定（辞書等の再現性に寄与）
     # os.environ["PYTHONHASHSEED"] = str(seed)
@@ -49,7 +55,62 @@ def seed_everything(seed):
     torch.backends.cudnn.benchmark = False
     # torch.use_deterministic_algorithms(True)
 
+
+
+
+
+# ==========================================
+# 学習途中の記録保存・再開用プログラム
+# ==========================================
+class CheckpointManager:
+    def __init__(self,
+                 modules,
+                 ckpt_dir,
+                 epoch_size,
+                 epochs,
+                 save_freq=None,
+                 save_freq_mints=None):
+        
+        self.modules = modules
+        self.ckpt_dir = ckpt_dir
+        self.epoch_size = epoch_size
+        self.epochs = epochs
+        self.save_freq = save_freq
+        self.save_freq_mints = save_freq_mints
+
+        self.time = time.time()
+        self.distributed = torch.distributed.is_available(
+        ) and torch.distributed.is_initialized()
+        self.world_size = torch.distributed.get_world_size(
+        ) if self.distributed else 1
+        self.rank = torch.distributed.get_rank() if self.distributed else 0
+
+        os.makedirs(os.path.join(self.ckpt_dir), exist_ok=True)
     
+
+    def resume(self):
+
+        ckpt_fname = os.path.join(self.ckpt_dir, 'checkpoint_latest.pth')
+        start_epoch = 0
+
+        if os.path.isfile(ckpt_fname):
+            checkpoint = torch.load(ckpt_fname, map_location='cpu')
+
+            # Load state dict
+            for k in self.modules:
+                self.modules[k].load_state_dict(checkpoint[k])
+            start_epoch = checkpoint['epoch']
+            print("=> loaded checkpoint '{}' (epoch {})".format(
+                ckpt_fname, checkpoint['epoch']))
+        
+        return start_epoch
+
+
+
+
+
+
+
 
 
 
