@@ -1,7 +1,9 @@
 
 import os
 import sys
+import csv
 import time
+import math
 import random
 import numpy as np
 
@@ -67,7 +69,6 @@ class WindowAverageMeter(object):
         return fmtstr.format(**self.__dict__)
 
 
-
 class ProgressMeter(object):
     def __init__(self, num_batches, meters, prefix="", tbwriter=None):
         self.batch_fmtstr = self._get_batch_fmtstr(num_batches)
@@ -105,8 +106,6 @@ class ProgressMeter(object):
         return out
 
 
-
-        
 # ==========================================
 # seed値の固定
 # ==========================================
@@ -131,15 +130,11 @@ def seed_everything(seed):
     # torch.use_deterministic_algorithms(True)
 
 
-
-
-
 # ==========================================
 # 学習途中の記録保存・再開用プログラム
 # ==========================================
 def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
-    distributed = torch.distributed.is_available(
-    ) and torch.distributed.is_initialized()
+    distributed = torch.distributed.is_available() and torch.distributed.is_initialized()
     if not distributed or (distributed and torch.distributed.get_rank() == 0):
         torch.save(state, filename)
         print("=> saved checkpoint '{}' (epoch {})".format(
@@ -219,6 +214,12 @@ class CheckpointManager:
             ckpt_fname = os.path.join(self.ckpt_dir, 'checkpoint_{:010.4f}.pth')
             ckpt_fname = ckpt_fname.format(epoch + batch_i / float(self.epoch_size))
 
+
+            # csvファイルに対応表を記録する
+            distributed = torch.distributed.is_available() and torch.distributed.is_initialized()
+            if not distributed or (distributed and torch.distributed.get_rank() == 0):
+                self.write_model_taskid(ckpt_fname, taskid)
+
             state = self.create_state_dict(save_dict)
             if self.rank == 0:
                 save_checkpoint(state, is_best=False, filename=ckpt_fname)
@@ -234,6 +235,30 @@ class CheckpointManager:
         return state
     
 
+    def write_model_taskid(self, ckpt_fname, taskid):
+
+        # {self.ckpt_dir}/a_ckpt_taskid.csv に各モデルが何のタスクを学習中かの対応を書き込む
+        file_path = f"{self.ckpt_dir}/a_ckpt_taskid.csv"
+        
+        if not os.path.isfile(file_path):
+            with open(file_path, 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+
+                # ヘッダー行を定義（必要に応じて適宜変更）
+                header = ["taskid", "ckpt_fname"]
+                writer.writerow(header)
+
+        # CSV に実際のデータを追加記録する
+        with open(file_path, 'a', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            row = [taskid, ckpt_fname]
+            writer.writerow(row)
+
+
+    
+    
+    
+    
     # ------------------------------------------
     # main.py と train() から呼び出される関数
     # ------------------------------------------
@@ -244,11 +269,51 @@ class CheckpointManager:
         else:
             if batch_i % 1 == 0:
                 self.timed_checkpoint(save_dict)
-            self.midway_epoch_checkpoint(epoch, batch_i, save_dict=save_dict)
+            self.midway_epoch_checkpoint(epoch, batch_i, save_dict=save_dict, taskid=taskid)
 
 
 
 
+# ==========================================
+# 学習率の調整
+# ==========================================
+def adjust_learning_rate(optimizer, epoch, cfg, epoch_size=None):
+    
+    """Decay the learning rate based on schedule"""
+    init_lr = cfg.optimizer.train.learning_rate
+    if cfg.optimizer.train.scheduler_type == 'constant':
+        cur_lr = init_lr
+
+    elif cfg.optimizer.train.scheduler_type == 'cos':
+        cur_lr = init_lr * 0.5 * (1. + math.cos(math.pi * epoch / cfg.optimizer.train.epochs))
+
+    elif cfg.optimizer.train.scheduler_type == 'triangle':
+        assert False
+        # cfgの名前を修正していないので一旦エラーになるようにしました．必要ならcfgの内容を整えてから使用してください．
+        # T = cfg.optimizer.lr_schedule.period
+        # t = (epoch * epoch_size) % T
+        # if t < T / 2:
+        #     cur_lr = cfg.optimizer.train.learning_rate + t / (T / 2.) * (cfg.optimizer.lr_schedule.max_lr - cfg.optimizer.train.learning_rate)
+        # else:
+        #     cur_lr = cfg.optimizer.train.learning_rate + (T-t) / (T / 2.) * (cfg.optimizer.lr_schedule.max_lr - cfg.optimizer.train.learning_rate)
+
+    else:
+        raise ValueError('LR schedule unknown.')
+
+    if cfg.optimizer.train.scheduler_exit_decay > 0:
+        start_decay_epoch = cfg.optimizer.epochs * (1. - cfg.optimizer.lr_schedule.exit_decay)
+        if epoch > start_decay_epoch:
+            mult = 0.5 * (1. + math.cos(math.pi * (epoch - start_decay_epoch) / (cfg.optimizer.epochs - start_decay_epoch)))
+            cur_lr = cur_lr * mult
+
+    for param_group in optimizer.param_groups:
+        
+        if 'fix_lr' in param_group and param_group['fix_lr']:
+            param_group['lr'] = init_lr
+        else:
+            param_group['lr'] = cur_lr
+    
+    return cur_lr
 
 
 
@@ -299,4 +364,17 @@ def util_dataloader(model, trainloader, cfg):
         print("encoded.shape: ", encoded.shape)
         print("feature.shape: ", feature.shape)
         print("z.shape: ", z.shape)
+
+
+
+
+
+
+
+
+
+
+
+
+
 

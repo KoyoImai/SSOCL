@@ -5,7 +5,7 @@ import torch
 import torch.nn.functional as F
 
 
-from utils import AverageMeter, WindowAverageMeter, ProgressMeter
+from utils import AverageMeter, WindowAverageMeter, ProgressMeter, adjust_learning_rate
 
 
 
@@ -53,11 +53,18 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg, epoch, ck
 
         # 学習済みのバッチ数をカウント
         batch_i = trainloader.batch_sampler.advance_batches_seen()
-        efective_epoch = epoch + (batch_i / len(trainloader))
+        
+        # 学習率の調整
+        effective_epoch = epoch + (batch_i / len(trainloader))
+        lr = adjust_learning_rate(optimizer,
+                                  effective_epoch,
+                                  cfg,
+                                  epoch_size=len(trainloader))
+        lr_meter.update(lr)
 
 
         # 現在のタスクidを確認
-        task_id = trainloader.batch_sampler.return_taskid()
+        taskid = trainloader.batch_sampler.return_taskid()
 
 
         # 画像とラベルを獲得
@@ -131,6 +138,7 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg, epoch, ck
         if ckpt_manager is not None:
             ckpt_manager.checkpoint(epoch=epoch,
                                     batch_i=batch_i,
+                                    taskid=taskid,
                                     save_dict={
                                         'epoch': epoch,
                                         'batch_i': batch_i,

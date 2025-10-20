@@ -20,13 +20,15 @@ dataset:
   sharding: interleave
 optimizer:
   train:
-    learning_rate: 0.001
+    learning_rate: 0.1
     weight_decay: 0.0001
     momentum: 0.9
     eta: 0.005
     batch_size: 64
     start_epoch: 0
     epochs: 1
+    scheduler_type: cos
+    scheduler_exit_decay: 0
 continual:
   n_cls: 15813
   cls_per_task:
@@ -136,7 +138,7 @@ continual:
   repeat: 2
 log:
   name: null
-  base: default
+  base: default-v2
   model: model
   result: result
   base_path: null
@@ -144,7 +146,7 @@ log:
   explog_path: null
   mem_path: null
   result_path: null
-  save_freq: 0.1
+  save_freq: 0.01
   save_freq_mints: 20
   print_freq: 5
   resume: true

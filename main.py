@@ -151,7 +151,7 @@ def main(cfg):
     # cfg.log.model_path
     modules = {
         'state_dict': model,
-        'optimer': optimizer,
+        'optimizer': optimizer,
         'sampler': trainloader.batch_sampler
     }
 

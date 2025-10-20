@@ -118,7 +118,7 @@ hydra:
     override_dirname: ''
     id: ???
     num: ???
-    config_name: default
+    config_name: default_ours
     env_set: {}
     env_copy: []
     config:
