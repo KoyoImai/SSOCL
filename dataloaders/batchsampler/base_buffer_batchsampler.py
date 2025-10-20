@@ -6,6 +6,7 @@ from torch.utils.data import Sampler
 
 import random
 from abc import ABC, abstractmethod
+from collections import deque
 
 
 import torch
@@ -69,6 +70,19 @@ def gather_buffer(buffer, distributed=False):
     return buffer_tensor
 
 
+
+def reverse_tensorized_buffer(buffer_tensor, rank=0):
+    buffer = []
+    keys = list(buffer_tensor.keys())
+    siz = buffer_tensor[keys[0]][rank].shape[0]
+    for i in range(siz):
+        buffer += [{
+            k: buffer_tensor[k][rank][i].item() if k in {
+                'idx', 'lifespan', 'seen', 'num_seen'
+            } else buffer_tensor[k][rank][i].cpu()
+            for k in keys
+        }]
+    return buffer
 
 
 
@@ -151,7 +165,17 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
 
     def load_state_dict(self, state_dict):
 
-        assert False
+        self.buffer = deque(reverse_tensorized_buffer(state_dict['buffer'],
+                                                      self.rank),
+                            maxlen=self.buffer_size)
+        self.db_head = state_dict['db_head']
+        self.num_batches_seen = state_dict['num_batches_seen']
+        self.num_batches_yielded = state_dict['num_batches_yielded']
+        self.init_from_ckpt = True
+
+        batch_history = state_dict['batch_history'][self.rank]
+        batch_history = deque([b.tolist() for b in batch_history], maxlen=128)
+        self.batch_history = batch_history
 
 
     # バッファにデータを格納するために，保存する情報の体裁を整えるための関数
@@ -159,10 +183,10 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
 
         entry: Dict[str, Any] = {
             "idx": int(idx),
-            "loss": None,                 # 後でサンプル別 loss を記録
+            # "loss": None,                 # 後でサンプル別 loss を記録
             "feature": None,              # 後で埋め込みベクトル等を記録
             "label": None,                # 必要なら評価・分析に使用（SSLでも保持するが，学習には使用しない）
-            "taskid": None,               # 必要なら評価・分析に使用
+            # "taskid": None,               # 必要なら評価・分析に使用
             "num_seen": 0,                # 何回バッファから取り出して学習したか
             "seen": False,                # 一度でも学習に使ったかのフラグ
             "neighbor_similarity": None,  # 

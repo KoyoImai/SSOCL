@@ -53,8 +53,9 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg, epoch, ck
 
         # 学習済みのバッチ数をカウント
         batch_i = trainloader.batch_sampler.advance_batches_seen()
-        # init_batch_i = trainloader.batch_sampler.init_batch_i
-        # batch_i = batch_i + init_batch_
+        efective_epoch = epoch + (batch_i / len(trainloader))
+        
+
 
         # 現在のタスクidを確認
         task_id = trainloader.batch_sampler.task_id

@@ -182,6 +182,7 @@ class CheckpointManager:
 
             # Load state dict
             for k in self.modules:
+                print("resume k: ", k)
                 self.modules[k].load_state_dict(checkpoint[k])
             start_epoch = checkpoint['epoch']
             print("=> loaded checkpoint '{}' (epoch {})".format(
@@ -225,6 +226,7 @@ class CheckpointManager:
                 save_checkpoint(state, is_best=False, filename=ckpt_fname)
                 ckpt_fname = os.path.join(self.ckpt_dir, 'checkpoint_latest.pth')
                 save_checkpoint(state, is_best=False, filename=ckpt_fname)
+                print("モデルのパラメータなどを保存しました．{}".format(ckpt_fname))
 
     
     def create_state_dict(self, save_dict):

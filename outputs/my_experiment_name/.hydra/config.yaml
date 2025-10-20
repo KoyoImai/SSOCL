@@ -147,7 +147,7 @@ log:
   save_freq: 0.1
   save_freq_mints: 20
   print_freq: 5
-  resume: false
+  resume: true
 ddp:
   local_rank: null
   use_ddp: null

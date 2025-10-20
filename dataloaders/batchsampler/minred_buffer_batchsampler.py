@@ -78,6 +78,10 @@ class MinRedBufferBatchSampler(BaseBufferBatchSampler):
         
         # 指数移動平均を計算するための関数
         def polyak_avg(val, avg, gamma):
+
+            if avg.device != val.device:
+                avg = avg.to(val.device, non_blocking=True)
+            
             return (1 - gamma) * val + gamma * avg
         
         # サンプルを順番に処理を実行
