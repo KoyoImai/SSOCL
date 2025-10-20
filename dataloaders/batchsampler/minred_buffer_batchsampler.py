@@ -75,10 +75,12 @@ class MinRedBufferBatchSampler(BaseBufferBatchSampler):
         z = sample_info['feature'][:].detach()
         sample_features = F.normalize(z, p=2, dim=-1)
 
+        
+        # 指数移動平均を計算するための関数
         def polyak_avg(val, avg, gamma):
             return (1 - gamma) * val + gamma * avg
         
-
+        # サンプルを順番に処理を実行
         for i in range(len(sample_index)):
             db_idx = sample_index[i].item()         # データセットのインデックス
             if db_idx in db2buff:
@@ -93,6 +95,7 @@ class MinRedBufferBatchSampler(BaseBufferBatchSampler):
                                                dim=-1)
                 
                 b['label'] = sample_label[i]
+                b['num_seen'] += 1
                 b['seen'] = True
             #print("b['label'] : ", b['label'])
                 
@@ -161,6 +164,20 @@ class MinRedBufferBatchSampler(BaseBufferBatchSampler):
 
         # バッファからデータを削除
         self.buffer = [b for i, b in enumerate(self.buffer) if i not in idx2rm]
+
+        # Recompute nearest neighbor similarity for tracking
+        if any(b['seen'] for b in self.buffer):
+            feats = torch.stack(
+                [b['feature'] for b in self.buffer if b['seen']], 0)
+            feats = feats.cuda() if torch.cuda.is_available() else feats
+            feats_sim = torch.einsum('ad,bd->ab', feats, feats)
+            neig_sim = torch.topk(feats_sim, k=2, dim=-1,
+                                  sorted=False)[0][:, 1:].mean(dim=1).cpu()
+            i = 0
+            for b in self.buffer:
+                if b['seen']:
+                    b['neighbor_similarity'] = neig_sim[i]
+                    i += 1
 
 
 

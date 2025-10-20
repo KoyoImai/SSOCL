@@ -108,6 +108,13 @@ def main(cfg):
 
 
 
+    # ===========================================
+    # tensorboard で記録するための準備
+    # （一旦不要．必要なら後から実装）
+    # ===========================================
+    writer = None
+
+    
 
     # ===========================================
     # modelの作成
@@ -173,7 +180,7 @@ def main(cfg):
         trainloader.batch_sampler.set_epoch(epoch=epoch)
         
         train(model=model, model2=model2, criterions=criterions, optimizer=optimizer,
-              trainloader=trainloader, cfg=cfg, epoch=epoch, ckpt_manager=ckpt_manager)
+              trainloader=trainloader, cfg=cfg, epoch=epoch, ckpt_manager=ckpt_manager, writer=writer)
 
     
 

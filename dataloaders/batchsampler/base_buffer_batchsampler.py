@@ -159,13 +159,14 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
 
         entry: Dict[str, Any] = {
             "idx": int(idx),
-            "loss": None,           # 後でサンプル別 loss を記録
-            "feature": None,        # 後で埋め込みベクトル等を記録
-            "label": None,          # 必要なら評価・分析に使用（SSLでも保持するが，学習には使用しない）
-            "taskid": None,         # 必要なら評価・分析に使用
-            "num_seen": 0,          # 何回バッファから取り出して学習したか
-            "seen": False,          # 一度でも学習に使ったかのフラグ
-            "lifespan": 0,          # バッファに保存されていた期間
+            "loss": None,                 # 後でサンプル別 loss を記録
+            "feature": None,              # 後で埋め込みベクトル等を記録
+            "label": None,                # 必要なら評価・分析に使用（SSLでも保持するが，学習には使用しない）
+            "taskid": None,               # 必要なら評価・分析に使用
+            "num_seen": 0,                # 何回バッファから取り出して学習したか
+            "seen": False,                # 一度でも学習に使ったかのフラグ
+            "neighbor_similarity": None,  # 
+            "lifespan": 0,                # バッファに保存されていた期間
         }
 
         return entry

@@ -52,7 +52,7 @@ continual:
                  30,  36,   60,  161, 33,  85,  46,  158, 49,  18]
   n_task: 2
   buffer_type: "minred"
-  buffer_size: 200
+  buffer_size: 4096
   repeat: 3
 
 
@@ -68,7 +68,7 @@ log:
   result_path: 
   save_freq: 0.1
   save_freq_mints: 20
-  print_freq: 10
+  print_freq: 5
   resume: False
 
 

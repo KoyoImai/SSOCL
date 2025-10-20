@@ -1,5 +1,6 @@
 
 import os
+import sys
 import time
 import random
 import numpy as np
@@ -64,6 +65,45 @@ class WindowAverageMeter(object):
     def __str__(self):
         fmtstr = '{name} {val' + self.fmt + '} ({avg' + self.fmt + '})'
         return fmtstr.format(**self.__dict__)
+
+
+
+class ProgressMeter(object):
+    def __init__(self, num_batches, meters, prefix="", tbwriter=None):
+        self.batch_fmtstr = self._get_batch_fmtstr(num_batches)
+        self.meters = meters
+        self.prefix = prefix
+        self.tbwriter = tbwriter
+
+    def display(self, batch):
+        entries = [self.prefix + self.batch_fmtstr.format(batch)]
+        entries += [str(meter) for meter in self.meters]
+        print('\t'.join(entries))
+        sys.stdout.flush()
+
+    def _get_batch_fmtstr(self, num_batches):
+        num_digits = len(str(num_batches // 1))
+        fmt = '{:' + str(num_digits) + 'd}'
+        return '[' + fmt + '/' + fmt.format(num_batches) + ']'
+
+    def tbwrite(self, batch):
+        if self.tbwriter is None:
+            return
+        scalar_dict = self.tb_scalar_dict()
+        for k, v in scalar_dict.items():
+            self.tbwriter.add_scalar(k, v, batch)
+
+    def tb_scalar_dict(self):
+        out = {}
+        for meter in self.meters:
+            val = meter.avg
+            if not meter.tbname:
+                meter.tbname = meter.name
+                tag = meter.tbname
+                sclrval = val
+                out[tag] = sclrval
+        return out
+
 
 
         

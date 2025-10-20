@@ -132,7 +132,7 @@ continual:
   - 18
   n_task: 2
   buffer_type: minred
-  buffer_size: 200
+  buffer_size: 4096
   repeat: 3
 log:
   name: null
@@ -146,6 +146,7 @@ log:
   result_path: null
   save_freq: 0.1
   save_freq_mints: 20
+  print_freq: 5
   resume: false
 ddp:
   local_rank: null
@@ -154,5 +155,4 @@ ddp:
 seed: 777
 date: 20251004
 workers: 8
-print_freq: 10
 debug: false
