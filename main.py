@@ -55,31 +55,8 @@ def preparation(cfg):
         os.makedirs(cfg.log.result_path)
 
 
+def make_ddp(cfg):
 
-
-
-@hydra.main(config_path='configs/default/', config_name='default', version_base=None)
-def main(cfg):
-
-    # ===========================================
-    # シード固定
-    # ===========================================
-    seed_everything(cfg.seed)
-
-    # logの名前
-    cfg.log.name = f"{cfg.log.base}_{cfg.method.name}_{cfg.continual.buffer_type}{cfg.continual.buffer_size}_{cfg.dataset.type}_seed{cfg.seed}_date{cfg.date}"
-
-
-    # ===========================================
-    # データローダ作成やディレクトリ作成などの前処理
-    # ===========================================
-    preparation(cfg)
-
-
-
-    # ===========================================
-    # DDP 関連の処理を時効
-    # ===========================================
     # DDP 使用の環境変数
     local_rank = int(os.environ["LOCAL_RANK"])
     use_ddp = local_rank != -1
@@ -106,7 +83,57 @@ def main(cfg):
     
     if cfg.ddp.local_rank is not None:
         print("Use GPU: {} for training".format(cfg.ddp.local_rank))
+    
 
+# DDP の world_size に応じて学習ハイパラを調整
+def setup_hypara(cfg):
+
+    # バッチサイズを各プロセスで均等に分割
+    cfg.optimizer.train.batch_size = int(cfg.optimizer.train.batch_size / cfg.ddp.world_size)
+
+
+
+def make_amp(cfg):
+    
+    use_amp = bool(getattr(cfg, "amp", None) and cfg.amp.use_amp)
+    use_bf16 = use_amp and (str(cfg.amp.dtype).lower() == "bf16")
+    use_fp16 = use_amp and (str(cfg.amp.dtype).lower() == "fp16")
+    scaler = None
+    if use_fp16 and bool(getattr(cfg.amp, "grad_scaler", True)):
+        scaler = GradScaler(enabled=True)
+    # bf16 はスケーリング不要（数値範囲が広い）
+
+    # 参考: TF32 を許可（速度重視、学習再現性は若干変わる場合あり）
+    torch.backends.cuda.matmul.allow_tf32 = True
+    torch.backends.cudnn.allow_tf32 = True
+
+
+
+
+
+@hydra.main(config_path='configs/default/', config_name='default', version_base=None)
+def main(cfg):
+
+    # ===========================================
+    # シード値固定
+    # ===========================================
+    seed_everything(cfg.seed)
+
+    # logの名前を決定
+    cfg.log.name = f"{cfg.log.base}_{cfg.method.name}_{cfg.continual.buffer_type}{cfg.continual.buffer_size}_{cfg.dataset.type}_seed{cfg.seed}_date{cfg.date}"
+
+
+    # ===========================================
+    # データローダ作成やディレクトリ作成などの前処理
+    # ===========================================
+    preparation(cfg)
+
+
+    # ===========================================
+    # DDP 関連の処理を実行
+    # ===========================================
+    make_ddp(cfg)
+    setup_hypara(cfg)
 
 
     # ===========================================
@@ -114,7 +141,6 @@ def main(cfg):
     # （一旦不要．必要なら後から実装）
     # ===========================================
     writer = None
-
     
 
     # ===========================================
@@ -146,21 +172,10 @@ def main(cfg):
     trainloader = DataLoader(dataset, batch_sampler=batch_sampler, num_workers=cfg.workers, pin_memory=True)
 
 
-
     # =========================
     # AMP: GradScaler 準備
     # =========================
-    use_amp = bool(getattr(cfg, "amp", None) and cfg.amp.use_amp)
-    use_bf16 = use_amp and (str(cfg.amp.dtype).lower() == "bf16")
-    use_fp16 = use_amp and (str(cfg.amp.dtype).lower() == "fp16")
-    scaler = None
-    if use_fp16 and bool(getattr(cfg.amp, "grad_scaler", True)):
-        scaler = GradScaler(enabled=True)
-    # bf16 はスケーリング不要（数値範囲が広い）
-
-    # 参考: TF32 を許可（速度重視、学習再現性は若干変わる場合あり）
-    torch.backends.cuda.matmul.allow_tf32 = True
-    torch.backends.cudnn.allow_tf32 = True
+    scaler = make_amp(cfg)
 
 
 

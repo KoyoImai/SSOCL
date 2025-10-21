@@ -1,5 +1,9 @@
 
 
+
+import torch.nn as nn
+
+
 from losses.loss_ours import MultiCropContrastiveLoss, TotalCodingRateLoss
 
 
@@ -15,11 +19,14 @@ def make_criterion(cfg):
         criterions = {"mcc": mcc_criterion, "tcr": tcr_criterion}
 
 
+    elif cfg.method.name in ["minred"]:
+        criterion = nn.CosineSimilarity(dim=1)
+    
     else:
         assert False
     
 
-
+    
 
 
     return criterions
