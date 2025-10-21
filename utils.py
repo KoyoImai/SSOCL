@@ -10,7 +10,7 @@ import numpy as np
 
 import torch
 from torchvision.utils import save_image
-
+import torch.distributed as dist
 
 
 # ==========================================
@@ -319,6 +319,45 @@ def adjust_learning_rate(optimizer, epoch, cfg, epoch_size=None):
 
 
 
+# ==========================================
+# 複数プロセス間で特徴を集約
+# ==========================================
+def concat_all_gather_no_grad(t: torch.Tensor) -> torch.Tensor:
+    
+    """他 rank の特徴を勾配なしで集約（デタッチ）。"""
+    world_size = dist.get_world_size()
+    
+    if world_size == 1:
+        return t
+    
+    tensors_gather = [torch.zeros_like(t) for _ in range(world_size)]
+    with torch.no_grad():
+        dist.all_gather(tensors_gather, t)  # 各rankの t を収集
+    
+    return torch.cat(tensors_gather, dim=0)
+
+
+
+
+def concat_all_gather_keep_grad(x: torch.Tensor) -> torch.Tensor:
+    """
+    全 rank の特徴を集める。ただし **自 rank の x だけは detach しない**。
+    これで勾配は自分のサンプルにだけ流れ、他 rank の特徴は定数として扱われる。
+    """
+    if not dist.is_initialized() or dist.get_world_size() == 1:
+        return x
+
+    world = dist.get_world_size()
+    rank = dist.get_rank()
+
+    # いったん全 rank のテンソルを detatch で収集
+    xs = [torch.zeros_like(x) for _ in range(world)]
+    dist.all_gather(xs, x.detach())             # ここは detach で OK
+
+    # 自分の位置だけ「元の x（勾配あり）」に差し替える
+    xs[rank] = x                                 # ← これが肝
+
+    return torch.cat(xs, dim=0)
 
 
 

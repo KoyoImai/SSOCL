@@ -89,7 +89,7 @@ def make_ddp(cfg):
 def setup_hypara(cfg):
 
     # バッチサイズを各プロセスで均等に分割
-    cfg.optimizer.train.batch_size = int(cfg.optimizer.train.batch_size / cfg.ddp.world_size)
+    cfg.optimizer.train.batch_size = int(cfg.optimizer.train.batch_size / int(cfg.ddp.world_size))
 
 
 

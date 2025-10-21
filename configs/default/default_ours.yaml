@@ -20,8 +20,8 @@ dataset:
   type: "imagenet21k"
   num_classes: 13971
   data_folder: '/home/kouyou/datasets/'
-  # filelist: "/home/kouyou/make_dataset/kmeans_clustering_100/filelists/similar_order"
-  filelist: "/home/yanaka/ContinualLearning/kmeans_clustering_100/filelists4cluster/similar_order"
+  filelist: "/home/kouyou/make_dataset/kmeans_clustering_100/filelists/similar_order"
+  # filelist: "/home/yanaka/ContinualLearning/kmeans_clustering_100/filelists4cluster/similar_order"
   size: 224
   drop_last: True
   start_index: 0
@@ -34,7 +34,7 @@ optimizer:
     weight_decay: 1e-4
     momentum: 0.9
     eta: 0.005
-    batch_size: 40
+    batch_size: 128
     start_epoch: 0
     epochs: 1
     scheduler_type: "cos"
@@ -53,7 +53,7 @@ continual:
                   28,   26,   31,   46,  105,   69,    43,  176,   49,   33, 
                   40,   43,   25,   49,   16,   90,   115,  131,   34,   52, 
                   52,   13,   17,  117,  243,  116,    16,   31,  139,  101]
-  n_task: 100
+  n_task: 1
   buffer_type: "minred"
   buffer_size: 65536
   repeat: 5
