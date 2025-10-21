@@ -96,7 +96,7 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg, epoch, ck
         # print("feature.shape: ", feature.shape)    # feature.shape:  torch.Size([320, 4096])
         # print("z_proj.shape: ", z_proj.shape)      # z_proj.shape:  torch.Size([320, 1024])
 
-        z_proj = concat_all_gather_keep_grad(z_proj)  # [B_global * V, D]
+        z_proj_concat = concat_all_gather_keep_grad(z_proj)  # [B_global * V, D]
         # print("z_proj.shape: ", z_proj.shape)       # z_proj.shape:  torch.Size([1280, 1024])
 
 
@@ -123,7 +123,7 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg, epoch, ck
 
         if use_amp:
             with autocast(dtype=amp_dtype):
-                z_list = z_proj.chunk(cfg.method.num_crops, dim=0)
+                z_list = z_proj_concat.chunk(cfg.method.num_crops, dim=0)
                 z_avg = chunk_avg(z_proj, cfg.method.num_crops)
 
                 loss_mcc = criterion_mcc(z_list)
@@ -135,7 +135,7 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg, epoch, ck
                 losses.update(loss.item(), images.size(0))
 
         else:
-            z_list = z_proj.chunk(cfg.method.num_crops, dim=0)
+            z_list = z_proj_concat.chunk(cfg.method.num_crops, dim=0)
             z_avg = chunk_avg(z_proj, cfg.method.num_crops)
 
             loss_mcc = criterion_mcc(z_list)

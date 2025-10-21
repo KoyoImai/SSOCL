@@ -1,4 +1,8 @@
 
+# configファイルの保存先なので忘れず変更する
+hydra:
+  run:
+    dir: outputs/ours_baseline2
 
 # 手法名
 method: 
@@ -53,7 +57,7 @@ continual:
                   28,   26,   31,   46,  105,   69,    43,  176,   49,   33, 
                   40,   43,   25,   49,   16,   90,   115,  131,   34,   52, 
                   52,   13,   17,  117,  243,  116,    16,   31,  139,  101]
-  n_task: 1
+  n_task: 3
   buffer_type: "minred"
   buffer_size: 65536
   repeat: 5
@@ -61,7 +65,7 @@ continual:
 
 log:
   name: 
-  base: "baseline"
+  base: "baseline4"
   model: "model"
   result: "result"
   base_path: 
@@ -94,6 +98,4 @@ workers: 8
 debug: False
 
 
-hydra:
-  run:
-    dir: outputs/ours_baseline
+

@@ -91,12 +91,10 @@ class MinRedBufferBatchSampler(BaseBufferBatchSampler):
                 b = self.buffer[db2buff[db_idx]]    # バッファ
                 
                 if not b['seen']:
-                    b['feature'] = sample_features[i]
+                    b['feature'] = sample_features[i].detach().to("cpu")
                 else:
                     b['feature'] = F.normalize(polyak_avg(
-                        b['feature'], sample_features[i], self.gamma),
-                                               p=2,
-                                               dim=-1)
+                        b['feature'], sample_features[i].detach().to("cpu"), self.gamma), p=2, dim=-1)
                 
                 b['label'] = sample_label[i]
                 b['num_seen'] += 1
@@ -212,8 +210,8 @@ class MinRedBufferBatchSampler(BaseBufferBatchSampler):
             self.indices_to_add = indices_to_add
 
             # バッファ内にデータが一定量たまるまで学習を行わずデータを溜め続ける
+            # if len(self.buffer) < int(self.buffer_size // 2):
             if len(self.buffer) < self.buffer_size:
-                # self.num_batches_yielded += 1
                 continue
 
             # バッファからデータを削除

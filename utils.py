@@ -170,6 +170,7 @@ class CheckpointManager:
     def resume(self):
 
         ckpt_fname = os.path.join(self.ckpt_dir, 'checkpoint_latest.pth')
+        print("ckpt_fname: ", ckpt_fname)
         start_epoch = 0
 
         if os.path.isfile(ckpt_fname):
