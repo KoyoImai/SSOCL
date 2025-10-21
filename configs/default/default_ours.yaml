@@ -55,7 +55,7 @@ continual:
   n_task: 1
   buffer_type: "minred"
   buffer_size: 65536
-  repeat: 3
+  repeat: 30
 
 
 log:
@@ -81,7 +81,7 @@ ddp:
 
 amp:
   use_amp: True
-  dtype: "fp32"        # "fp16" か "bf16"（A100/H100 や RTX 40xx は bf16 推奨）
+  dtype: "fp16"        # "fp16" か "bf16"（A100/H100 や RTX 40xx は bf16 推奨）
   grad_scaler: true    # bf16 のときは自動的に無視されます
 
 
