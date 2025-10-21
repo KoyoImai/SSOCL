@@ -154,6 +154,7 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg, epoch, ck
         # ==========
         # backward + step (AMP 対応)
         # ==========
+        optimizer.zero_grad()
         if use_amp and scaler is not None:
             scaler.scale(loss).backward()
 
