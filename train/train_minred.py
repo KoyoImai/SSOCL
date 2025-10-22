@@ -18,8 +18,6 @@ def train_minred(model, model2, criterions, optimizer, trainloader, cfg, epoch, 
     # 学習状況を記録するための meter
     batch_time = WindowAverageMeter('Time', fmt=':6.3f')
     data_time = WindowAverageMeter('Data', fmt=':6.3f')
-    mcc_losses = AverageMeter('MCCLoss', ':.4e')
-    tcr_losses = AverageMeter('TCRLoss', ':.4e')
     losses = AverageMeter('Loss', ':.4e')
     lr_meter = AverageMeter('LR', ':.4e')
     buff_meters = []
@@ -30,7 +28,7 @@ def train_minred(model, model2, criterions, optimizer, trainloader, cfg, epoch, 
         neig_similarity = AverageMeter('Buffer Neig Sim', ':6.3f')
         buff_meters = [num_seen, num_seen_max, similarity,
         neig_similarity]
-    progress = ProgressMeter(len(trainloader), [batch_time, data_time, lr_meter] + buff_meters + [losses] + [mcc_losses] + [tcr_losses],
+    progress = ProgressMeter(len(trainloader), [batch_time, data_time, lr_meter] + buff_meters + [losses],
                              prefix="Epoch: [{}]".format(epoch),
                              tbwriter=writer)
 
@@ -89,13 +87,15 @@ def train_minred(model, model2, criterions, optimizer, trainloader, cfg, epoch, 
         if use_amp:
             with autocast(dtype=amp_dtype): 
                 p1, p2, z1, z2 = model(x1=images[0], x2=images[1])
-                loss = -(criterion(p1, z2).mean() + criterion(p2, z1).mean()) * 0.5
-                losses.update(loss.item(), images.size(0))
+                loss_per_sample = -(criterion(p1, z2.detach()) + criterion(p2, z1.detach())) * 0.5
+                loss = loss_per_sample.mean()
+                losses.update(loss.item(), images[0].size(0))
 
         else:
             p1, p2, z1, z2 = model(x1=images[0], x2=images[1])
-            loss = -(criterion(p1, z2).mean() + criterion(p2, z1).mean()) * 0.5
-            losses.update(loss.item(), images.size(0))
+            loss_per_sample = -(criterion(p1, z2.detach()) + criterion(p2, z1.detach())) * 0.5
+            loss = loss_per_sample.mean()
+            losses.update(loss.item(), images[0].size(0))
 
 
 
@@ -117,9 +117,9 @@ def train_minred(model, model2, criterions, optimizer, trainloader, cfg, epoch, 
         with torch.no_grad():
             
             # z1 と z2 の平均特徴を計算
-            z_avg = None
-            assert False
-            data['feature'] = torch.stack((z1, z2), 1).detach()
+            # print("z1.shape: {}, z2.shape: {}".format(z1.shape, z2.shape))     # z1.shape: torch.Size([32, 2048]), z2.shape: torch.Size([32, 2048])
+            sample_features = F.normalize(z1 + z2, p=2, dim=-1)
+            data['feature'] = sample_features.detach()
             
             if cfg.continual.buffer_type in ["minred"]:
                 stats = trainloader.batch_sampler.update_sample_stats(data)
@@ -137,10 +137,33 @@ def train_minred(model, model2, criterions, optimizer, trainloader, cfg, epoch, 
                         stats['neighbor_similarity'].float().mean().item(),
                         stats['neighbor_similarity'].shape[0])
 
+            else:  
+                assert False
 
 
 
+        # 後から分析可能にするため，学習途中のモデルを一定間隔で保存する
+        if ckpt_manager is not None:
+            ckpt_manager.checkpoint(epoch=epoch,
+                                    batch_i=batch_i,
+                                    taskid=taskid,
+                                    save_dict={
+                                        'epoch': epoch,
+                                        'batch_i': batch_i,
+                                        'arch': cfg.model.type,
+                                    })
 
+
+        # measure elapsed time
+        batch_time.update(time.time() - end)
+        end = time.time()
+
+        # 学習状況の表示
+        # print("len(trainloader.batch_sampler.buffer): ", len(trainloader.batch_sampler.buffer))
+        if batch_i % cfg.log.print_freq == 0:
+            tb_step = (epoch * len(trainloader.dataset) // cfg.optimizer.train.batch_size + batch_i * int(cfg.ddp.world_size))
+            progress.display(batch_i)
+            progress.tbwrite(tb_step)
 
 
 

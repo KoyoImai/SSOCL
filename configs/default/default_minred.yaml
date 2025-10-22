@@ -8,7 +8,7 @@ method:
 model:
   type: "resnet50"
   simsiam_dim: 2048
-  pred_dim: 512
+  pred_dim: 1024
 
 
 dataset:
@@ -47,10 +47,10 @@ continual:
                   28,   26,   31,   46,  105,   69,    43,  176,   49,   33, 
                   40,   43,   25,   49,   16,   90,   115,  131,   34,   52, 
                   52,   13,   17,  117,  243,  116,    16,   31,  139,  101]
-  n_task: 1
+  n_task: 3
   buffer_type: "minred"
   buffer_size: 65536
-  repeat: 3
+  repeat: 20
 
 
 log:
@@ -63,9 +63,9 @@ log:
   explog_path: 
   mem_path: 
   result_path: 
-  save_freq: 0.005
+  save_freq: 0.1
   save_freq_mints: 20
-  print_freq: 20
+  print_freq: 5
   resume: True
 
 
@@ -75,9 +75,16 @@ ddp:
   world_size: 
 
 
+amp:
+  use_amp: True
+  dtype: "fp16"        # "fp16" か "bf16"（A100/H100 や RTX 40xx は bf16 推奨）
+  grad_scaler: true    # bf16 のときは自動的に無視されます
+
+
+
 seed: 777
 date: 2025_1020
-workers: 8
+workers: 4
 
 
 debug: False
