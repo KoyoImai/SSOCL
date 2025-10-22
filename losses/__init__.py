@@ -5,7 +5,7 @@ import torch.nn as nn
 
 
 from losses.loss_ours import MultiCropContrastiveLoss, TotalCodingRateLoss
-
+from losses.loss_empssl import SimilarityLoss
 
 
 
@@ -23,6 +23,13 @@ def make_criterion(cfg):
         criterion = nn.CosineSimilarity(dim=1)
 
         criterions = {"cos": criterion}
+    
+    elif cfg.method.name in ["empssl"]:
+        
+        sim_criterion = SimilarityLoss()
+        tcr_criterion = TotalCodingRateLoss(eps=cfg.method.eps_tcr)
+
+
     
     else:
         assert False

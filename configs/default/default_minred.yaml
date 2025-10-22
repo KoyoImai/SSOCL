@@ -1,5 +1,10 @@
 
 
+hydra:
+  run:
+    dir: outputs/minred_baseline
+    
+
 # 手法名
 method: 
   name: "minred"
@@ -9,14 +14,15 @@ model:
   type: "resnet50"
   simsiam_dim: 2048
   pred_dim: 512
+  fix_pred_lr: True
 
 
 dataset:
   type: "imagenet21k"
   num_classes: 13971
   data_folder: '/home/kouyou/datasets/'
-  # filelist: "/home/kouyou/make_dataset/kmeans_clustering_100/filelists/similar_order"
-  filelist: "/home/kouyou/ContinualLearning/kmeans_clustering_100/filelists4cluster/similar_order"
+  filelist: "/home/kouyou/make_dataset/kmeans_clustering_100/filelists/similar_order"
+  # filelist: "/home/kouyou/ContinualLearning/kmeans_clustering_100/filelists4cluster/similar_order"
   size: 224
   drop_last: True
   start_index: 0
@@ -91,6 +97,3 @@ workers: 4
 debug: False
 
 
-hydra:
-  run:
-    dir: outputs/minred_baseline
