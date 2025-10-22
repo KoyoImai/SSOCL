@@ -21,6 +21,8 @@ def make_criterion(cfg):
 
     elif cfg.method.name in ["minred"]:
         criterion = nn.CosineSimilarity(dim=1)
+
+        criterions = {"cos": criterion}
     
     else:
         assert False

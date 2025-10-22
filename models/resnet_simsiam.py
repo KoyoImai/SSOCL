@@ -200,7 +200,7 @@ class LinearBatchNorm(nn.Module):
 
 class ResNetProjectorHead(nn.Module):
     """backbone + projection head"""
-    def __init__(self, name='resnet50', seed=777, norm_p=2, cfg=None):
+    def __init__(self, name='resnet50', seed=777, dim=2048, pred_dim=512, cfg=None):
         super(ResNetProjectorHead, self).__init__()
 
         # seed値の決定
@@ -213,23 +213,32 @@ class ResNetProjectorHead(nn.Module):
         model_fun, dim_in = model_dict[name]
         self.dim_in = dim_in
 
-        self.norm_p = norm_p
 
         # Encoderの作成
         self.encoder = model_fun()
 
-        # projection head の作成
-        self.head1 = nn.Sequential(
-            nn.Linear(dim_in, cfg.model.hidden_dim),
-            nn.BatchNorm1d(cfg.model.hidden_dim),
-            nn.ReLU()
+        # projector の作成（3-layer MLP）
+        self.projector = nn.Sequential(
+            nn.Linear(dim_in, dim_in, bias=False),    # 1層目
+            nn.BatchNorm1d(dim_in),
+            nn.ReLU(inplace=True),
+
+            nn.Linear(dim_in, dim_in, bias=False),    # 2層目
+            nn.BatchNorm1d(dim_in),
+            nn.ReLU(inplace=True), # second layer
+
+            nn.Linear(dim_in, dim, bias=False),       # 3層目
+            nn.BatchNorm1d(dim, affine=False)
         )
 
-        self.head2 = nn.Sequential(
-            nn.Linear(cfg.model.hidden_dim, cfg.model.hidden_dim),
-            nn.BatchNorm1d(cfg.model.hidden_dim),
-            nn.ReLU(),
-            nn.Linear(cfg.model.hidden_dim, cfg.model.output_dim))
+
+        # Predictor の作成
+        self.predictor = nn.Sequential(
+            nn.Linear(dim, pred_dim, bias=False),
+            nn.BatchNorm1d(pred_dim),
+            nn.ReLU(inplace=True),
+            nn.Linear(pred_dim, dim)    
+        )
 
 
 
@@ -239,14 +248,28 @@ class ResNetProjectorHead(nn.Module):
                 layers.reset_parameters()
 
 
-    def forward(self, x, return_feat=False, norm=True):
+    def forward(self, x1, x2=None):
 
-        encoded = self.encoder(x)
-        feature = self.head1(encoded)
-        z_proj = F.normalize(self.head2(feature), p=self.norm_p)
+        """
+        Input:
+            x1: first views of images
+            x2: second views of images
+        Output:
+            p1, p2, z1, z2: predictors and targets of the network
+            See Sec. 3 of https://arxiv.org/abs/2011.10566 for detailed notations
+        """
+
+        encoded1 = self.encoder(x1)  # NxC
+        z1 = self.projector(encoded1)
+        p1 = self.predictor(z1)  # NxC
+        if x2 is None:
+            return p1, z1.detach() # Need to detach here?
+
+        encoded2 = self.encoder(x2)  # NxC
+        z2 = self.projector(encoded2)  # NxC
+        p2 = self.predictor(z2)  # NxC
         
-        
-        return encoded, feature, z_proj
+        return p1, p2, z1.detach(), z2.detach() # Need to detach here?
         
 
 

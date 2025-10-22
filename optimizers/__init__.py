@@ -13,7 +13,7 @@ def make_optimizer(cfg, model):
 
     optimizer = None
 
-    if cfg.method.name in ["ours"]:
+    if cfg.method.name in ["ours", "minred"]:
 
         optimizer = optim.SGD(
             model.parameters(),
@@ -28,6 +28,7 @@ def make_optimizer(cfg, model):
             clip=True,
             exclude_bias_n_norm=True
         )
+
 
     else:
 

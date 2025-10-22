@@ -13,7 +13,9 @@ def train(model, model2, criterions, optimizer, trainloader, cfg, epoch, ckpt_ma
                    trainloader=trainloader, cfg=cfg, epoch=epoch, ckpt_manager=ckpt_manager, writer=writer, scaler=scaler)
 
 
+    elif cfg.method.name == "minred":
 
+        train_minred()
 
 
 

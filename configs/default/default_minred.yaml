@@ -7,8 +7,8 @@ method:
 
 model:
   type: "resnet50"
-  hidden_dim: 2048
-  output_dim: 512
+  simsiam_dim: 2048
+  pred_dim: 512
 
 
 dataset:
@@ -47,7 +47,7 @@ continual:
                   28,   26,   31,   46,  105,   69,    43,  176,   49,   33, 
                   40,   43,   25,   49,   16,   90,   115,  131,   34,   52, 
                   52,   13,   17,  117,  243,  116,    16,   31,  139,  101]
-  n_task: 100
+  n_task: 1
   buffer_type: "minred"
   buffer_size: 65536
   repeat: 3

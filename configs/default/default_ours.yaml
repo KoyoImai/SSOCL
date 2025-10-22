@@ -2,7 +2,7 @@
 # configファイルの保存先なので忘れず変更する
 hydra:
   run:
-    dir: outputs/ours_baseline2
+    dir: outputs/ours_baseline1
 
 # 手法名
 method: 
@@ -24,8 +24,8 @@ dataset:
   type: "imagenet21k"
   num_classes: 13971
   data_folder: '/home/kouyou/datasets/'
-  filelist: "/home/kouyou/make_dataset/kmeans_clustering_100/filelists/similar_order"
-  # filelist: "/home/yanaka/ContinualLearning/kmeans_clustering_100/filelists4cluster/similar_order"
+  # filelist: "/home/kouyou/make_dataset/kmeans_clustering_100/filelists/similar_order"
+  filelist: "/home/yanaka/ContinualLearning/kmeans_clustering_100/filelists4cluster/similar_order"
   size: 224
   drop_last: True
   start_index: 0
@@ -57,15 +57,15 @@ continual:
                   28,   26,   31,   46,  105,   69,    43,  176,   49,   33, 
                   40,   43,   25,   49,   16,   90,   115,  131,   34,   52, 
                   52,   13,   17,  117,  243,  116,    16,   31,  139,  101]
-  n_task: 3
+  n_task: 100
   buffer_type: "minred"
   buffer_size: 65536
-  repeat: 5
+  repeat: 3
 
 
 log:
   name: 
-  base: "baseline4"
+  base: "baseline1"
   model: "model"
   result: "result"
   base_path: 
@@ -92,7 +92,7 @@ amp:
 
 seed: 777
 date: 2025_1021
-workers: 8
+workers: 4
 
 
 debug: False

@@ -1,4 +1,8 @@
 
+# configファイルの保存先なので忘れず変更する
+hydra:
+  run:
+    dir: outputs/ours_baseline2      # 変更箇所
 
 # 手法名
 method: 
@@ -34,7 +38,7 @@ optimizer:
     weight_decay: 1e-4
     momentum: 0.9
     eta: 0.005
-    batch_size: 64
+    batch_size: 128
     start_epoch: 0
     epochs: 1
     scheduler_type: "cos"
@@ -56,12 +60,12 @@ continual:
   n_task: 100
   buffer_type: "minred"
   buffer_size: 65536
-  repeat: 5
+  repeat: 3
 
 
 log:
   name: 
-  base: "baseline-gpu2"
+  base: "baseline2"      # 変更箇所
   model: "model"
   result: "result"
   base_path: 
@@ -87,13 +91,11 @@ amp:
 
 
 seed: 777
-date: 2025_1021
-workers: 8
+date: 2025_1021      # 変更箇所
+workers: 4
 
 
 debug: False
 
 
-hydra:
-  run:
-    dir: outputs/ours_baseline
+
