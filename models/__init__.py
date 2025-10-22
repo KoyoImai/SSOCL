@@ -36,7 +36,9 @@ def make_model(cfg):
         model = DDP(model.to(cfg.ddp.local_rank), device_ids=[cfg.ddp.local_rank])
         model2 = DDP(model2.to(cfg.ddp.local_rank), device_ids=[cfg.ddp.local_rank])
 
+    elif cfg.method.name in ["empssl"]:
 
+        assert False
 
     else:
         assert False
