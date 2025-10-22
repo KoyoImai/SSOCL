@@ -3,6 +3,7 @@
 
 from train.train_ours import train_ours
 from train.train_minred import train_minred
+from train.train_empssl import train_empssl
 
 
 
@@ -20,6 +21,12 @@ def train(model, model2, criterions, optimizer, trainloader, cfg, epoch, ckpt_ma
                      trainloader=trainloader, cfg=cfg, epoch=epoch, ckpt_manager=ckpt_manager, writer=writer, scaler=scaler)
 
 
+    elif cfg.method.name == "empssl":
+
+        train_empssl(model=model, model2=model2, criterions=criterions, optimizer=optimizer,
+                     trainloader=trainloader, cfg=cfg, epoch=epoch, ckpt_manager=ckpt_manager, writer=writer, scaler=scaler)
+
+        assert False
 
 
 

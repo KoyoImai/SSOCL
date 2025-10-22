@@ -8,7 +8,7 @@ def make_transform(cfg):
 
 
     
-    if cfg.method.name in ['ours']:
+    if cfg.method.name in ['ours', 'empssl']:
 
         transform = MultiCropViewGenerator(cfg=cfg, num_crops=cfg.method.num_crops)
     

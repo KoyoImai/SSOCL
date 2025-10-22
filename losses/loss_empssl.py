@@ -32,9 +32,9 @@ class SimilarityLoss(nn.Module):
 
 
 
-class TotalCodingRate(nn.Module):
+class TotalCodingRateLoss(nn.Module):
     def __init__(self, eps=0.01):
-        super(TotalCodingRate, self).__init__()
+        super(TotalCodingRateLoss, self).__init__()
         self.eps = eps
         
     def compute_discrimn_loss(self, W):

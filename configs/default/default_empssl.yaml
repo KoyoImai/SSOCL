@@ -8,7 +8,7 @@ hydra:
 method: 
   name: "empssl"
   num_crops: 10
-  lambda_mcc: 200
+  lambda_sim: 200
   lambda_tcr: 1.0
   eps_tcr: 0.2
 
@@ -56,7 +56,7 @@ continual:
                   28,   26,   31,   46,  105,   69,    43,  176,   49,   33, 
                   40,   43,   25,   49,   16,   90,   115,  131,   34,   52, 
                   52,   13,   17,  117,  243,  116,    16,   31,  139,  101]
-  n_task: 100
+  n_task: 2
   buffer_type: "minred"
   buffer_size: 65536
   repeat: 3
