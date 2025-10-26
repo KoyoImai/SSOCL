@@ -48,3 +48,5 @@ def make_transform_eval(cfg):
         transforms.ToTensor(),
         normalize,
     ])
+
+    return train_transform, val_transform

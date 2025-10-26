@@ -58,3 +58,9 @@ def make_model(cfg, use_ddp=True):
 
 
 
+def make_classifier(cfg):
+
+    assert False
+
+
+

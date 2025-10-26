@@ -6,10 +6,12 @@ import builtins
 
 import torch
 import torch.distributed as dist
+from torch.utils.data import DataLoader
 
 
 from models import make_model
 from augmentaions import make_transform_eval
+from dataloaders import make_dataset_eval
 from utils import seed_everything, CheckpointManager
 
 
@@ -110,9 +112,11 @@ def main(cfg):
 
 
     # ===========================================
-    # modelの作成
+    # model と classifier の作成
     # ===========================================
     model, _ = make_model(cfg, use_ddp=False)
+    classifier = make_classifier(cfg)
+
 
     # ---------- 観察対象（最初の1パラメータ）のスナップショット ----------
     name, before = next(iter(model.state_dict().items()))
@@ -155,8 +159,21 @@ def main(cfg):
     # データローダーの作成
     # ===========================================
     train_transform, val_transform = make_transform_eval(cfg)
-    dataset = make_dataset_eval(cfg, train_transform)
+    train_dataset, val_dataset = make_dataset_eval(cfg, train_transform, val_transform)
 
+    train_loader = DataLoader(dataset=train_dataset,
+                              batch_size=cfg.linear.batch_size,
+                              shuffle=True,
+                              num_workers=cfg.linear.num_workers,
+                              pin_memory=True,
+                              drop_last=True)
+
+    val_loader = DataLoader(dataset=val_dataset,
+                            batch_size=500,
+                            shuffle=False,
+                            num_workers=cfg.linear.num_workers,
+                            pin_memory=True,
+                            drop_last=False)
 
 
 

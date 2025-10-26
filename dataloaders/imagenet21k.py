@@ -1,6 +1,7 @@
 
 import os
 import math
+import random
 import numpy as np
 from collections import defaultdict
 
@@ -62,8 +63,7 @@ class ImageNet21K(data.Dataset):
         # filelist.txt までのパスを設定
         # ==============================================================
         # 指定された filelist が存在するかの確認
-        assert (os.path.exists(filelist)
-                ), '{} does not exist'.format(filelist)
+        assert (os.path.exists(filelist)), '{} does not exist'.format(filelist)
 
         all_files = []
         task_size = []
@@ -209,6 +209,148 @@ class ImageNet21K(data.Dataset):
 
 
 
+
+# ==============================================================
+# ImageNet21K の線形分類用データセットの定義
+# ==============================================================
+
+# 各クラスごとにシャッフル → 比率分割（決定的にするため seed 指定）
+def split_by_class(lines, train_ratio: float, seed: int):
+    """
+    lines: ["<path> <label>", ...]
+    train_ratio: 0.0 ~ 1.0
+    seed: 乱数シード（決定的分割）
+    """
+    rng = random.Random(seed)
+    by_label = defaultdict(list)
+
+    # パス内のスペースに耐性を持たせるため rsplit を使用
+    for ln in lines:
+        path, label = ln.rsplit(" ", 1)
+        # print("path: ", path)
+        # print("label: ", label)
+        # assert False
+        by_label[int(label)].append(ln)
+    # print("path: ", path)
+    train_lines, val_lines = [], []
+
+    for _, items in by_label.items():
+        rng.shuffle(items)
+        n = len(items)
+
+        # 四捨五入ベースで計算しつつ、片側が空にならないように調整
+        n_train = int(round(n * train_ratio))
+        if n >= 2:
+            n_train = max(1, min(n - 1, n_train))
+        else:
+            n_train = 1  # n==1 の場合は train 側に入れる
+
+        train_lines.extend(items[:n_train])
+        val_lines.extend(items[n_train:])
+
+    return train_lines, val_lines
+
+
+
+class ImageNet21K_linear(data.Dataset):
+
+    def __init__(self, cfg, transforms=None, filelist=None, num_task=None, train=True, linear_train=True, task_id=[], train_ratio=0.7):
+
+        data.Dataset.__init__(self)
+
+        
+        self.train = train
+        self.linear_train = linear_train
+        self.filelist = filelist
+        self.num_task = num_task
+        self.mode = "train" if train else "val"
+
+        self.train_ratio = train_ratio
+
+        all_lines_dict = defaultdict(list)
+        all_files = []
+        all_labels = []
+
+        # ==============================================================
+        # seed値の固定
+        # ==============================================================
+        seed_everything(seed=cfg.seed)
+
+
+        # ==============================================================
+        # filelist.txt までのパスを設定
+        # ==============================================================
+        # 指定された filelist が存在するかの確認
+        assert (os.path.exists(filelist)), '{} does not exist'.format(filelist)
+
+        all_files = []
+        task_size = []
+        for i in task_id:
+
+            # 特定タスク用の filelist からパスを読み込む
+            with open(f"{filelist}/task_{i:03d}_{self.mode}.txt", 'r') as f:
+
+                # 学習用データまでの全てのパスを取得
+                task_files = f.read().splitlines()
+                # print("task_files[0]: ", task_files[0])    # task_files[0]:  /home/kouyou/datasets/ImageNet21K/winter21_whole/n02689274/n02689274_12997.JPEG 0
+
+            # タスクごとに一つの辞書に格納
+            all_lines_dict[i] = task_files
+        
+        self.all_lines_dict = all_lines_dict
+        self.task_size = task_size
+
+
+        # ==============================================================
+        # 全ての filelist.txt に記述されたパスを連結
+        # （今後，この部分を改良してSeq-bbのようなシナリオにも対応可能にする）
+        # ==============================================================
+        for i in task_id:
+
+            # 各タスクのfilelist.txtに含まれる記述を取り出す
+            task_lines = self.all_lines_dict[i]
+
+            lin_train, lin_val = split_by_class(
+                task_lines,
+                train_ratio=self.train_ratio,
+                seed=cfg.seed + i  # タスクごとに少しずらす
+            )
+
+            if i == 0:
+                print("lin_train[0:5]: ", lin_train[0:5])
+                print("lin_val[0:5]: ", lin_val[0:5])
+
+            chosen = lin_train if self.linear_train else lin_val
+
+            # ファイルパスとラベルを分割して保存
+            task_files  = [ln.rsplit(" ", 1)[0] for ln in chosen]
+            task_labels = [int(ln.rsplit(" ", 1)[1]) for ln in chosen]
+
+            all_files  += task_files
+            all_labels += task_labels
+        
+
+        self.all_files = torch.stack([encode_filename(fn) for fn in all_files])
+        self.all_labels = torch.tensor(all_labels)
+        assert self.all_files.shape[0] == self.all_labels.shape[0]
+
+
+        # ==============================================================
+        # データ拡張の定義
+        # ==============================================================
+        if not isinstance(transforms, list):
+            transforms = [transforms]
+        self.transforms = transforms
+
+
+    
+    def __getitem__(self, idx):
+
+        assert False
+
+    
+    def __len__(self):
+        return self.all_files.shape[0]
 
 
 

@@ -1,7 +1,7 @@
 
 
 
-from dataloaders.imagenet21k import ImageNet21K
+from dataloaders.imagenet21k import ImageNet21K, ImageNet21K_linear
 from dataloaders.stream_sampler import StreamSampler
 from dataloaders.batchsampler.base_buffer_batchsampler import BaseBufferBatchSampler
 from dataloaders.batchsampler.minred_buffer_batchsampler import MinRedBufferBatchSampler
@@ -40,7 +40,6 @@ def make_sampler(cfg, dataset):
     return sampler
 
 
-
 def make_batchsampler(cfg, dataset, sampler):
 
     if cfg.continual.buffer_type == "minred":
@@ -60,15 +59,36 @@ def make_batchsampler(cfg, dataset, sampler):
 
 def make_dataset_eval(cfg, train_transform, val_transform):
 
+    if cfg.linear.task_id == []:
+        cfg.linear.task_id = list(range(cfg.linear.n_task))
+
+
     if cfg.dataset.type == "imagenet21k":
 
-        train_dataset = None
-        val_dataset = None
-        assert False
-    
+        train_dataset = ImageNet21K_linear(cfg=cfg,
+                                           transforms=train_transform,
+                                           filelist=cfg.dataset.filelist,
+                                           num_task=cfg.continual.n_task,
+                                           train=False,
+                                           linear_train=True,
+                                           task_id=cfg.linear.task_id)
+        
+        val_dataset = ImageNet21K_linear(cfg=cfg,
+                                         transforms=val_transform,
+                                         filelist=cfg.dataset.filelist,
+                                         num_task=cfg.continual.n_task,
+                                         train=False,
+                                         linear_train=False,
+                                         task_id=cfg.linear.task_id)
+        
+
+        # print("len(train_dataset): ", len(train_dataset))
+        # print("len(val_dataset): ", len(val_dataset))
 
     else:
         assert False
 
-    assert False
 
+
+
+    return train_dataset, val_dataset
