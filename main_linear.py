@@ -154,14 +154,14 @@ def main(cfg):
     # 学習済みパラメータの読み込み
     # ===========================================
     # ---------- 観察対象（最初の1パラメータ）のスナップショット ----------
-    name, before = next(iter(model.state_dict().items()))
-    before = before.detach().cpu().clone()
-    print(f"[TARGET] {name}")
-    print("before[:5]:", before.flatten()[:5])
+    # name, before = next(iter(model.state_dict().items()))
+    # before = before.detach().cpu().clone()
+    # print(f"[TARGET] {name}")
+    # print("before[:5]:", before.flatten()[:5])
 
 
-    ckpt_path = f"{cfg.log.model_path}/checkpoint_00001.0000.pth"
-    # ckpt_path = f"{cfg.log.model_path}/checkpoint_00000.0800.pth"
+    # ckpt_path = f"{cfg.log.model_path}/checkpoint_00001.0000.pth"
+    ckpt_path = f"{cfg.log.model_path}/checkpoint_00000.9600.pth"
 
     checkpoint = torch.load(ckpt_path, map_location="cpu")
     # print("checkpoint.keys(): ", checkpoint.keys())                                # checkpoint.keys():  dict_keys(['state_dict', 'optimizer', 'sampler', 'epoch', 'batch_i', 'arch'])
@@ -179,33 +179,58 @@ def main(cfg):
 
 
 
-    # ---------- 読み込み後の同パラメータを確認 ----------
-    after = model.state_dict()[name].detach().cpu()
-    print("after[:5]: ", after.flatten()[:5])
-    print("changed?: ", not torch.equal(before, after))
-    print("max|diff|: ", (before - after).abs().max().item())
+    # # ---------- 読み込み後の同パラメータを確認 ----------
+    # after = model.state_dict()[name].detach().cpu()
+    # print("after[:5]: ", after.flatten()[:5])
+    # print("changed?: ", not torch.equal(before, after))
+    # print("max|diff|: ", (before - after).abs().max().item())
 
 
 
     # ===========================================
     # データローダーの作成
     # ===========================================
+    use_cuda = torch.cuda.is_available()
+    if not use_cuda:
+        raise RuntimeError(
+            "このスクリプトは GPU 前提です。CUDA/GPU が見えていません。"
+        )
+
     train_transform, val_transform = make_transform_eval(cfg)
     train_dataset, val_dataset = make_dataset_eval(cfg, train_transform, val_transform)
 
+    # trainloader = DataLoader(dataset=train_dataset,
+    #                          batch_size=cfg.linear.train.batch_size,
+    #                          shuffle=True,
+    #                          num_workers=cfg.linear.num_workers,
+    #                          pin_memory=True,
+    #                          drop_last=True,
+    #                          pin_memory_device='cuda' if use_cuda else 'cpu',
+    #                          )
+
+    # valloader = DataLoader(dataset=val_dataset,
+    #                        batch_size=500,
+    #                        shuffle=False,
+    #                        num_workers=cfg.linear.num_workers,
+    #                        pin_memory=True,
+    #                        drop_last=False,
+    #                        pin_memory_device='cuda' if use_cuda else 'cpu',
+    #                        )
     trainloader = DataLoader(dataset=train_dataset,
                              batch_size=cfg.linear.train.batch_size,
                              shuffle=True,
                              num_workers=cfg.linear.num_workers,
-                             pin_memory=True,
-                             drop_last=True)
+                            #  pin_memory=True,
+                             drop_last=True,
+                             )
 
     valloader = DataLoader(dataset=val_dataset,
                            batch_size=500,
                            shuffle=False,
                            num_workers=cfg.linear.num_workers,
                            pin_memory=True,
-                           drop_last=False)
+                           drop_last=False,
+                           )
 
 
 

@@ -31,8 +31,13 @@ def make_transform(cfg):
 
 def make_transform_eval(cfg):
 
-    mean=(0.5, 0.5, 0.5)
-    std=(0.5, 0.5, 0.5)
+    if cfg.method.name in ["ours", "empssl"]:
+        mean=(0.5, 0.5, 0.5)
+        std=(0.5, 0.5, 0.5)
+    elif cfg.method.name in ["minred"]:
+        mean=(0.485, 0.456, 0.406)
+        std=(0.229, 0.224, 0.225)
+
     normalize = transforms.Normalize(mean=mean, std=std)
 
     train_transform = transforms.Compose([

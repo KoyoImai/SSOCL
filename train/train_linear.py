@@ -7,6 +7,22 @@ import torch
 from utils import AverageMeter, ProgressMeter
 
 
+import warnings
+warnings.filterwarnings(
+    "ignore",
+    message=r"Possibly corrupt EXIF data.*",
+    category=UserWarning,
+    module=r"PIL\.TiffImagePlugin"
+)
+
+warnings.filterwarnings(
+    "ignore",
+    message=r"(?:Possibly corrupt|Corrupt) EXIF data.*",
+    category=UserWarning,
+    module=r"PIL\.(?:TiffImagePlugin|JpegImagePlugin)"
+)
+
+
 
 def accuracy(output, target, topk=(1, )):
     """Computes the accuracy over the k top predictions for the specified values of k"""
@@ -48,6 +64,7 @@ def train_linear(model, classifier, criterion, optimizer, trainloader, valloader
     use_amp = bool(getattr(cfg, "amp", None) and cfg.amp.use_amp)
     amp_dtype = torch.bfloat16 if (use_amp and str(cfg.amp.dtype).lower() == "bf16") else torch.float16
 
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     end = time.time()
     for idx, data in enumerate(trainloader):
@@ -56,8 +73,9 @@ def train_linear(model, classifier, criterion, optimizer, trainloader, valloader
         labels = data["target"]
 
         if torch.cuda.is_available():
-            images = images.cuda()
-            labels = labels.cuda()
+            images = images.to(device, non_blocking=True)
+            labels = labels.to(device, non_blocking=True)
+
         
 
         with torch.no_grad():
