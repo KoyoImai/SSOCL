@@ -90,11 +90,20 @@ class MinRedBufferBatchSampler(BaseBufferBatchSampler):
             if db_idx in db2buff:
                 b = self.buffer[db2buff[db_idx]]    # バッファ
                 
+                    
+                # # 学習再開時にエラーが発生しない
+                # if not b['seen']:
+                #     b['feature'] = sample_features[i].detach().to("cpu")
+                # else:
+                #     b['feature'] = F.normalize(polyak_avg(
+                #         b['feature'], sample_features[i].detach().to("cpu"), self.gamma), p=2, dim=-1)
+
+
+                # 学習再開時にエラーが発生する
                 if not b['seen']:
-                    b['feature'] = sample_features[i].detach().to("cpu")
+                    b['feature'] = sample_features[i]
                 else:
-                    b['feature'] = F.normalize(polyak_avg(
-                        b['feature'], sample_features[i].detach().to("cpu"), self.gamma), p=2, dim=-1)
+                    b['feature'] = F.normalize(polyak_avg(b['feature'], sample_features[i], self.gamma), p=2, dim=-1)
                 
                 b['label'] = sample_label[i]
                 b['num_seen'] += 1
