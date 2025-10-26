@@ -24,8 +24,8 @@ dataset:
   type: "imagenet21k"
   num_classes: 13971
   data_folder: '/home/kouyou/datasets/'
-  # filelist: "/home/kouyou/make_dataset/kmeans_clustering_100/filelists/similar_order"
-  filelist: "/home/yanaka/ContinualLearning/kmeans_clustering_100/filelists4cluster/similar_order"
+  filelist: "/home/kouyou/make_dataset/kmeans_clustering_100/filelists/similar_order"
+  # filelist: "/home/yanaka/ContinualLearning/kmeans_clustering_100/filelists4cluster/similar_order"
   size: 224
   drop_last: True
   start_index: 0

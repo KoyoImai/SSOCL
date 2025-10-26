@@ -9,7 +9,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 
 
 
-def make_model(cfg):
+def make_model(cfg, use_ddp=True):
 
     model = None
 
@@ -20,9 +20,6 @@ def make_model(cfg):
         
         model  = ResNetProjectorHead(name=cfg.model.type, seed=cfg.seed, cfg=cfg)
         model2 = ResNetProjectorHead(name=cfg.model.type, seed=cfg.seed, cfg=cfg)
-
-        model = DDP(model.to(cfg.ddp.local_rank), device_ids=[cfg.ddp.local_rank])
-        model2 = DDP(model2.to(cfg.ddp.local_rank), device_ids=[cfg.ddp.local_rank])
     
     elif cfg.method.name in ["minred"]:
 
@@ -33,9 +30,6 @@ def make_model(cfg):
         model2 = ResNetProjectorHead(name=cfg.model.type, seed=cfg.seed, dim=cfg.model.simsiam_dim,
                                      pred_dim=cfg.model.pred_dim, cfg=cfg)
 
-        model = DDP(model.to(cfg.ddp.local_rank), device_ids=[cfg.ddp.local_rank])
-        model2 = DDP(model2.to(cfg.ddp.local_rank), device_ids=[cfg.ddp.local_rank])
-
     elif cfg.method.name in ["empssl"]:
 
         from models.resnet_empssl import ResNetProjectorHead
@@ -43,16 +37,24 @@ def make_model(cfg):
         model  = ResNetProjectorHead(name=cfg.model.type, seed=cfg.seed, cfg=cfg)
         model2 = ResNetProjectorHead(name=cfg.model.type, seed=cfg.seed, cfg=cfg)
 
-        model = DDP(model.to(cfg.ddp.local_rank), device_ids=[cfg.ddp.local_rank])
-        model2 = DDP(model2.to(cfg.ddp.local_rank), device_ids=[cfg.ddp.local_rank])
-
-
     else:
         assert False
+    
 
 
-
-
+    # DDP で ラッピング
+    if use_ddp:
+        model = DDP(model.to(cfg.ddp.local_rank), device_ids=[cfg.ddp.local_rank])
+        model2 = DDP(model2.to(cfg.ddp.local_rank), device_ids=[cfg.ddp.local_rank])
+    else:
+        # model.to(cfg.device)
+        # model2.to(cfg.device)
+        model.cuda()
+        model2.cuda()
 
 
     return model, model2
+
+
+
+
