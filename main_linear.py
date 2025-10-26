@@ -7,11 +7,16 @@ import builtins
 import torch
 import torch.distributed as dist
 from torch.utils.data import DataLoader
+from torch.cuda.amp import GradScaler
 
 
-from models import make_model
+
+from models import make_model, make_classifier
 from augmentaions import make_transform_eval
 from dataloaders import make_dataset_eval
+from optimizers import make_optimizer_eval
+from losses import make_criterion_eval
+from train import linear_train, adjust_learning_rate
 from utils import seed_everything, CheckpointManager
 
 
@@ -81,6 +86,21 @@ def setup_hypara(cfg):
     cfg.optimizer.train.batch_size = int(cfg.optimizer.train.batch_size / int(cfg.ddp.world_size))
 
 
+def make_amp(cfg):
+    
+    use_amp = bool(getattr(cfg, "amp", None) and cfg.amp.use_amp)
+    use_bf16 = use_amp and (str(cfg.amp.dtype).lower() == "bf16")
+    use_fp16 = use_amp and (str(cfg.amp.dtype).lower() == "fp16")
+    scaler = None
+    if use_fp16 and bool(getattr(cfg.amp, "grad_scaler", True)):
+        scaler = GradScaler(enabled=True)
+    # bf16 はスケーリング不要（数値範囲が広い）
+
+    # 参考: TF32 を許可（速度重視、学習再現性は若干変わる場合あり）
+    torch.backends.cuda.matmul.allow_tf32 = True
+    torch.backends.cudnn.allow_tf32 = True
+
+
 
 
 
@@ -118,6 +138,21 @@ def main(cfg):
     classifier = make_classifier(cfg)
 
 
+    # ===========================================
+    # Optimizer の作成
+    # ===========================================
+    optimizer = make_optimizer_eval(cfg, classifier)
+
+
+    # ===========================================
+    # 損失関数の作成
+    # ===========================================
+    criterion = make_criterion_eval(cfg)
+
+
+    # ===========================================
+    # 学習済みパラメータの読み込み
+    # ===========================================
     # ---------- 観察対象（最初の1パラメータ）のスナップショット ----------
     name, before = next(iter(model.state_dict().items()))
     before = before.detach().cpu().clone()
@@ -125,9 +160,6 @@ def main(cfg):
     print("before[:5]:", before.flatten()[:5])
 
 
-    # ===========================================
-    # 学習済みパラメータの読み込み
-    # ===========================================
     ckpt_path = f"{cfg.log.model_path}/checkpoint_00001.0000.pth"
     # ckpt_path = f"{cfg.log.model_path}/checkpoint_00000.0800.pth"
 
@@ -161,25 +193,45 @@ def main(cfg):
     train_transform, val_transform = make_transform_eval(cfg)
     train_dataset, val_dataset = make_dataset_eval(cfg, train_transform, val_transform)
 
-    train_loader = DataLoader(dataset=train_dataset,
-                              batch_size=cfg.linear.batch_size,
-                              shuffle=True,
-                              num_workers=cfg.linear.num_workers,
-                              pin_memory=True,
-                              drop_last=True)
+    trainloader = DataLoader(dataset=train_dataset,
+                             batch_size=cfg.linear.train.batch_size,
+                             shuffle=True,
+                             num_workers=cfg.linear.num_workers,
+                             pin_memory=True,
+                             drop_last=True)
 
-    val_loader = DataLoader(dataset=val_dataset,
-                            batch_size=500,
-                            shuffle=False,
-                            num_workers=cfg.linear.num_workers,
-                            pin_memory=True,
-                            drop_last=False)
-
-
+    valloader = DataLoader(dataset=val_dataset,
+                           batch_size=500,
+                           shuffle=False,
+                           num_workers=cfg.linear.num_workers,
+                           pin_memory=True,
+                           drop_last=False)
 
 
 
 
+    # =========================
+    # AMP: GradScaler 準備
+    # =========================
+    scaler = make_amp(cfg)
+
+
+    # ===========================================
+    # tensorboard で記録するための準備
+    # （一旦不要．必要なら後から実装）
+    # ===========================================
+    writer = None
+
+
+    # =========================
+    # 評価 
+    # =========================
+    for epoch in range(cfg.linear.train.epochs):
+
+        adjust_learning_rate(optimizer, epoch, cfg)
+
+        linear_train(model=model, classifier=classifier, criterion=criterion, optimizer=optimizer,
+                     trainloader=trainloader, valloader=valloader, epoch=epoch, scaler=scaler, writer=writer, cfg=cfg)
 
 
 

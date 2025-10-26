@@ -4,6 +4,8 @@ import torch
 from torch.nn.parallel import DistributedDataParallel as DDP
 
 
+from models.linear_classifier import LinearClassifier
+
 
 
 
@@ -60,7 +62,17 @@ def make_model(cfg, use_ddp=True):
 
 def make_classifier(cfg):
 
-    assert False
+    if cfg.model.type == "resnet50":
+        classifier = LinearClassifier(num_classes=cfg.dataset.num_classes,
+                                      feat_dim=2048,
+                                      seed=cfg.seed)
+    else:
+        assert False
+
+    if torch.cuda.is_available():
+        classifier.cuda()
+
+    return classifier
 
 
 

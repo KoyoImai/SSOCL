@@ -112,19 +112,19 @@ class ImageNet21K(data.Dataset):
         # debug時は使用するデータ数を削減する
         if not cfg.debug:
             self.all_files = torch.stack([encode_filename(fn) for fn in all_files])
-            self.all_lables = torch.tensor(all_labels)
-            assert self.all_files.shape[0] == self.all_lables.shape[0]
+            self.all_labels = torch.tensor(all_labels)
+            assert self.all_files.shape[0] == self.all_labels.shape[0]
         else:
             self.all_files = torch.stack([encode_filename(fn) for fn in all_files[:1000]])
-            self.all_lables = torch.tensor(all_labels[:1000])
-            assert self.all_files.shape[0] == self.all_lables.shape[0]
+            self.all_laeles = torch.tensor(all_labels[:1000])
+            assert self.all_files.shape[0] == self.all_labels.shape[0]
 
 
         # Sampler で各プロセス毎に均等にデータストリームを分割するため self.all_files と self.all_labels の長さを調整
         # length は cfg.ddp.world_size * cfg.optimizer.batch_size で割り切れる必要がある
         length = math.floor(self.all_files.shape[0] / (int(cfg.ddp.world_size) * cfg.optimizer.train.batch_size)) * (int(cfg.ddp.world_size) * cfg.optimizer.train.batch_size)
         self.all_files = self.all_files[:length]
-        self.all_labels = self.all_lables[:length]
+        self.all_labels = self.all_labels[:length]
 
 
         # ==============================================================
@@ -184,7 +184,7 @@ class ImageNet21K(data.Dataset):
         meta["transid"] = i
         meta["filenames"] = fname
         meta["index"] = index
-        meta["label"] = self.all_lables[index]
+        meta["label"] = self.all_labels[index]
 
         out = {
             "input": image,
@@ -313,7 +313,7 @@ class ImageNet21K_linear(data.Dataset):
             lin_train, lin_val = split_by_class(
                 task_lines,
                 train_ratio=self.train_ratio,
-                seed=cfg.seed + i  # タスクごとに少しずらす
+                seed=cfg.seed
             )
 
             if i == 0:
@@ -338,15 +338,42 @@ class ImageNet21K_linear(data.Dataset):
         # ==============================================================
         # データ拡張の定義
         # ==============================================================
-        if not isinstance(transforms, list):
-            transforms = [transforms]
+        # if not isinstance(transforms, list):
+        #     transforms = [transforms]
         self.transforms = transforms
 
 
     
-    def __getitem__(self, idx):
+    def __getitem__(self, index):
 
-        assert False
+        MAX_TRIES = 50
+        for i in range(MAX_TRIES):
+            try:
+                fname = decode_filename(self.all_files[index])
+                image = datasets.folder.pil_loader(fname)
+                # label = self.all_labels[index]
+                break
+            except Exception:
+                if i == MAX_TRIES - 1:
+                    raise ValueError(
+                        f'Aborting. Failed to load {MAX_TRIES} times in a row. Check {fname}'
+                    )
+                print(f'Failed to load. {fname}')
+                index = np.random.randint(len(self))
+
+        
+        if self.transforms is not None:
+            image = self.transforms(image)
+        
+
+        out = {
+            "input": image,
+            "target": self.all_labels[index]
+        }
+
+        return out
+
+
 
     
     def __len__(self):

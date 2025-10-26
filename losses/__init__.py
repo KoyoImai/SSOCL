@@ -38,3 +38,12 @@ def make_criterion(cfg):
 
 
     return criterions
+
+
+
+def make_criterion_eval(cfg):
+
+    criterion = nn.CrossEntropyLoss().cuda()
+
+    return criterion
+

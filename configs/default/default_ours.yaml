@@ -73,7 +73,10 @@ linear:
     epochs: 100
     learning_rate: 1.0
     momentum: 0.9
+    weight_decay: 0
     schedule: [60, 80]
+    eta: 0.005
+    cos: True
 
 
 log:

@@ -66,7 +66,27 @@ def make_optimizer(cfg, model):
         assert False
     
 
+    return optimizer
 
+
+
+
+def make_optimizer_eval(cfg, classifier):
+
+
+    optimizer = optim.SGD(
+        classifier.parameters(),
+        lr=cfg.linear.train.learning_rate,
+        momentum=cfg.linear.train.momentum,
+        weight_decay=cfg.linear.train.weight_decay,
+    )
+
+    optimizer = LARSWrapper(
+        optimizer=optimizer,
+        eta=cfg.linear.train.eta,
+        clip=True,
+        exclude_bias_n_norm=True
+    )
 
 
     return optimizer

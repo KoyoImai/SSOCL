@@ -167,8 +167,6 @@ def main(cfg):
     # ===========================================
     train_transform = make_transform(cfg)
     dataset = make_dataset(cfg, train_transform)
-    print("len(dataset): ", len(dataset))    # len(dataset):  11360512
-    assert False
     sampler = make_sampler(cfg, dataset)
     batch_sampler = make_batchsampler(cfg, dataset, sampler)
     trainloader = DataLoader(dataset, batch_sampler=batch_sampler, num_workers=cfg.workers, pin_memory=True)
