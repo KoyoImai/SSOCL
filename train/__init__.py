@@ -60,6 +60,11 @@ def linear_train(model, classifier, criterion, optimizer, trainloader, valloader
     return
 
 
+def linear_eval(model, classifier, criterion, optimizer, trainloader, valloader, epoch, scaler, writer, cfg):
+
+    eval_linear(model=model, classifier=classifier, criterion=criterion, optimizer=optimizer,
+                 trainloader=trainloader, valloader=valloader, epoch=epoch, scaler=scaler, writer=writer, cfg=cfg)
+
 
 
 

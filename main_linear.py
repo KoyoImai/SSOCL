@@ -16,7 +16,7 @@ from augmentaions import make_transform_eval
 from dataloaders import make_dataset_eval
 from optimizers import make_optimizer_eval
 from losses import make_criterion_eval
-from train import linear_train, adjust_learning_rate
+from train import linear_train, adjust_learning_rate, linear_eval
 from utils import seed_everything, CheckpointManager
 
 
@@ -160,8 +160,8 @@ def main(cfg):
     # print("before[:5]:", before.flatten()[:5])
 
 
-    # ckpt_path = f"{cfg.log.model_path}/checkpoint_00001.0000.pth"
-    ckpt_path = f"{cfg.log.model_path}/checkpoint_00000.9600.pth"
+    ckpt_path = f"{cfg.log.model_path}/checkpoint_00001.0000.pth"
+    # ckpt_path = f"{cfg.log.model_path}/checkpoint_00000.9600.pth"
 
     checkpoint = torch.load(ckpt_path, map_location="cpu")
     # print("checkpoint.keys(): ", checkpoint.keys())                                # checkpoint.keys():  dict_keys(['state_dict', 'optimizer', 'sampler', 'epoch', 'batch_i', 'arch'])
@@ -258,6 +258,8 @@ def main(cfg):
         linear_train(model=model, classifier=classifier, criterion=criterion, optimizer=optimizer,
                      trainloader=trainloader, valloader=valloader, epoch=epoch, scaler=scaler, writer=writer, cfg=cfg)
 
+        linear_eval(model=model, classifier=classifier, criterion=criterion, optimizer=optimizer,
+                    trainloader=trainloader, valloader=valloader, epoch=epoch, scaler=scaler, writer=writer, cfg=cfg)
 
 
 
