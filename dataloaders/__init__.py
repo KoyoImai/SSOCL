@@ -60,8 +60,9 @@ def make_batchsampler(cfg, dataset, sampler):
 def make_dataset_eval(cfg, train_transform, val_transform):
 
     if cfg.linear.task_id == []:
-        cfg.linear.task_id = list(range(cfg.linear.n_task))
-
+        task_id = list(range(cfg.linear.n_task))
+    else:
+        task_id = cfg.linear.task_id
 
     if cfg.dataset.type == "imagenet21k":
 
@@ -71,7 +72,7 @@ def make_dataset_eval(cfg, train_transform, val_transform):
                                            num_task=cfg.continual.n_task,
                                            train=False,
                                            linear_train=True,
-                                           task_id=cfg.linear.task_id)
+                                           task_id=task_id)
         
         val_dataset = ImageNet21K_linear(cfg=cfg,
                                          transforms=val_transform,
@@ -79,7 +80,7 @@ def make_dataset_eval(cfg, train_transform, val_transform):
                                          num_task=cfg.continual.n_task,
                                          train=False,
                                          linear_train=False,
-                                         task_id=cfg.linear.task_id)
+                                         task_id=task_id)
         
 
         # print("len(train_dataset): ", len(train_dataset))

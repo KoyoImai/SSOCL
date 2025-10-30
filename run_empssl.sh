@@ -1,6 +1,6 @@
 
 
-export CUDA_VISIBLE_DEVICES="0"
+export CUDA_VISIBLE_DEVICES="3"
 
 
 export NCCL_BLOCKING_WAIT=1

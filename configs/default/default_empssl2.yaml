@@ -65,7 +65,7 @@ continual:
 
 linear:
   dataset: "imagenet21k"
-  task_id: []
+  task_id: [6]
   n_task: 100
   num_workers: 10
   train:
@@ -92,7 +92,7 @@ log:
   result_path: 
   save_freq: 0.005
   save_freq_mints: 20
-  print_freq: 20
+  print_freq: 10
   resume: True
 
 

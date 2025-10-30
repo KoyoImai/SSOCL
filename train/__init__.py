@@ -7,6 +7,7 @@ from train.train_ours import train_ours
 from train.train_minred import train_minred
 from train.train_empssl import train_empssl
 from train.train_linear import train_linear
+from train.eval_linear import eval_linear
 
 
 
@@ -66,7 +67,7 @@ def linear_eval(model, classifier, criterion, optimizer, trainloader, valloader,
                  trainloader=trainloader, valloader=valloader, epoch=epoch, scaler=scaler, writer=writer, cfg=cfg)
 
 
-
+    return 
 
 
 

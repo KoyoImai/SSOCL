@@ -1,4 +1,5 @@
 
+import os
 import sys
 import csv
 import time
@@ -26,52 +27,32 @@ warnings.filterwarnings(
 
 
 
-def save_all_stats_csv(all_stats, path):
-    """
-    all_stats = {
-        'acc1': float or 0-dim tensor,
-        'acc5': float or 0-dim tensor,
-        'preds': 1D list/ndarray/tensor,
-        'targets': 1D list/ndarray/tensor
-    }
-    """
-    def to_scalar(x):
-        try:
-            # works for Python float/int and 0-dim tensors/ndarrays
-            return float(x)
-        except (TypeError, ValueError):
-            try:
-                return float(x.item())
-            except Exception:
-                return ""
 
-    def to_list(x):
-        # supports list/tuple/ndarray/torch.Tensor
-        if hasattr(x, "detach") and hasattr(x, "cpu"):
-            x = x.detach().cpu()
-        if hasattr(x, "tolist"):
-            return x.tolist()
-        return list(x)
+def write_csv(value, path, file_name, task, epoch):
 
-    acc1 = to_scalar(all_stats.get("acc1", ""))
-    acc5 = to_scalar(all_stats.get("acc5", ""))
+    # ファイルパスを生成
+    file_path = f"{path}/{file_name}_task{task}.csv"
 
-    preds   = to_list(all_stats.get("preds", []))
-    targets = to_list(all_stats.get("targets", []))
+    # ファイルが存在しなければ新規作成、かつヘッダー行を記入する
+    # value がリストの場合は、ヘッダーの値部分は要素数に合わせて "value_1", "value_2", ... とする例
+    if not os.path.isfile(file_path):
+        with open(file_path, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            # ヘッダー行を定義（必要に応じて適宜変更）
+            if isinstance(value, list):
+                header = ["task"] + ["epoch"] + [f"task_{i+1}" for i in range(len(value))]
+            else:
+                header = ["task", "epoch", "value"]
+            writer.writerow(header)
 
-    with open(path, "w", newline="", encoding="utf-8") as f:
-        w = csv.writer(f)
-        w.writerow(["idx", "pred", "target", "acc1", "acc5"])
-        for i, (p, t) in enumerate(zip_longest(preds, targets, fillvalue="")):
-            # unwrap possible 0-dim tensors for p/t
-            if hasattr(p, "item") and callable(p.item): 
-                try: p = p.item()
-                except Exception: pass
-            if hasattr(t, "item") and callable(t.item):
-                try: t = t.item()
-                except Exception: pass
-            w.writerow([i, p, t, acc1, acc5])
-
+    # CSV に実際のデータを追加記録する
+    with open(file_path, 'a', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        if isinstance(value, list):
+            row = [task] + [epoch] + value
+        else:
+            row = [task, epoch, value]
+        writer.writerow(row)
 
 
 def accuracy(output, target, topk=(1, )):
@@ -92,7 +73,7 @@ def accuracy(output, target, topk=(1, )):
 
 
 
-def train_linear(model, classifier, criterion, optimizer, trainloader, valloader, epoch, scaler, writer, cfg):
+def eval_linear(model, classifier, criterion, optimizer, trainloader, valloader, epoch, scaler, writer, cfg):
 
     # modelをtrainモード，classifierをevalモードに変更
     model.eval()
@@ -121,7 +102,7 @@ def train_linear(model, classifier, criterion, optimizer, trainloader, valloader
 
     with torch.no_grad():
         end = time.time()
-        for idx, data in enumerate(trainloader):
+        for idx, data in enumerate(valloader):
 
             images = data["input"]
             labels = data["target"]
@@ -157,17 +138,21 @@ def train_linear(model, classifier, criterion, optimizer, trainloader, valloader
                 sys.stdout.flush()
 
 
-        progress.sync_distributed()
+        # progress.sync_distributed()
         print(' * Acc@1 {top1.avg:.3f} Acc@5 {top5.avg:.3f}'.format(top1=top1,
                                                                     top5=top5))
 
         progress.tbwrite(0)
         all_stats['acc1'] = top1.avg
         all_stats['acc5'] = top5.avg
-        all_stats['preds'] = preds
-        all_stats['targets'] = targets
 
-    save_all_stats_csv(all_stats, "results.csv")
+
+    if cfg.linear.task_id == []:
+        write_csv(top1.avg.item(), cfg.log.result_path, file_name="top1_acc", task="all", epoch=epoch)
+        write_csv(top5.avg.item(), cfg.log.result_path, file_name="top5_acc", task="all", epoch=epoch)
+    else:
+        write_csv(top1.avg.item(), cfg.log.result_path, file_name="top1_acc", task=cfg.linear.task_id, epoch=epoch)
+        write_csv(top5.avg.item(), cfg.log.result_path, file_name="top5_acc", task=cfg.linear.task_id, epoch=epoch)
 
     return all_stats
 
