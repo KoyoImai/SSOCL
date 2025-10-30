@@ -2,12 +2,16 @@
 import os
 import hydra
 
+
 import torch
 import torch.optim as optim
+from torch.optim.lr_scheduler import MultiStepLR
 
 
 from models import make_backbone, load_pretrained_resnet_backbone
 from models.detection import build_detection_model
+from augmentatins import make_detection_augmentation
+
 
 
 from utils import seed_everything
@@ -91,8 +95,16 @@ def main(cfg):
         weight_decay=cfg.detection.weight_decay,
     )
 
+    # ===========================================
+    # Scheduler の作成
+    # ===========================================
+    lr_scheduler = MultiStepLR(optimizer, milestones=cfg.detection.lr_milestones, gamma=cfg.detection.lr_gamma)
 
 
+    # ===========================================
+    # Dataloader の作成
+    # ===========================================
+    train_augmentation, test_augmentation = make_detection_augmentation(cfg)
 
 
     assert False

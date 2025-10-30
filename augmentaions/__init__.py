@@ -11,8 +11,6 @@ from augmentaions.simsiam_generator import make_simsiam_view_generator
 
 def make_transform(cfg):
 
-
-    
     if cfg.method.name in ['ours', 'empssl']:
 
         transform = MultiCropViewGenerator(cfg=cfg, num_crops=cfg.method.num_crops)
@@ -55,3 +53,21 @@ def make_transform_eval(cfg):
     ])
 
     return train_transform, val_transform
+
+
+
+def make_detection_augmentation(cfg):
+
+    train_augmentation = None
+    test_augmentation = None
+
+    return train_augmentation, test_augmentation
+
+
+
+
+
+
+
+
+
