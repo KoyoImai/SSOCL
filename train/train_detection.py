@@ -1,11 +1,17 @@
 
 import os
 import time
+from tqdm import tqdm
 from collections import Counter
+from typing import Dict, Iterable, List, Optional, Tuple
+
+from pycocotools.coco import COCO
+from pycocotools.cocoeval import COCOeval
 
 import torch
 import torchvision.transforms.functional as TF
 from torchvision.utils import draw_bounding_boxes
+from torchvision.ops import box_convert
 
 
 # ★あなたの Normalize と同じ値に変更（例: ImageNet）
@@ -65,6 +71,9 @@ def train_detection(model, train_loader, train_folder, optimizer, lr_scheduler, 
 
     for i, (images, targets) in enumerate(train_loader):
 
+        if i > 200:
+            break
+
         if lr_scheduler is not None:
             lr_scheduler.step()
 
@@ -95,9 +104,65 @@ def train_detection(model, train_loader, train_folder, optimizer, lr_scheduler, 
             loss_str = ", ".join(f"{k}: {v.item():.4f}" for k, v in loss_dict.items())
             print(f"{header} Iter {i + 1}/{len(train_loader)} | Loss {losses.item():.4f} | {loss_str} | {elapsed:.1f}s")
 
-    assert False
 
 
+
+
+
+
+def eval_detection(model, test_loader, test_folder, optimizer, lr_scheduler, device, scaler, epoch, print_freq, cfg):
+
+    model.eval()
+    coco_gt: COCO = test_loader.dataset.dataset.coco
+    results: List[Dict] = []
+
+    count = 0
+    with torch.no_grad():
+        for images, targets in tqdm(test_loader):
+
+            count += 1
+            images = [img.to(device) for img in images]
+
+            # # デバッグ用にバッチの確認
+            # targets_vis = [{k: v.to(device) for k, v in t.items()} for t in targets]
+            # visualize_batch(images, targets_vis, outdir=f"debug_eval_e{epoch:03d}_b{count:03d}", n=4)
+
+            outputs = model(images)
+
+            for output, target in zip(outputs, targets):
+                boxes = box_convert(output["boxes"].cpu(), in_fmt="xyxy", out_fmt="xywh")
+                scores = output["scores"].cpu()
+                labels = output["labels"].cpu()
+                image_id = int(target["image_id"].item())
+
+                for box, score, label in zip(boxes, scores, labels):
+                    results.append(
+                        {
+                            "image_id": image_id,
+                            "category_id": int(label.item()),
+                            "bbox": box.tolist(),
+                            "score": float(score.item()),
+                        }
+                    )
+
+    if not results:
+        return {"map": 0.0}
+
+    coco_dt = coco_gt.loadRes(results)
+    coco_eval = COCOeval(coco_gt, coco_dt, iouType="bbox")
+    coco_eval.evaluate()
+    coco_eval.accumulate()
+    coco_eval.summarize()
+
+    stats = {
+        "map": coco_eval.stats[0],
+        "map_50": coco_eval.stats[1],
+        "map_75": coco_eval.stats[2],
+        "map_small": coco_eval.stats[3],
+        "map_medium": coco_eval.stats[4],
+        "map_large": coco_eval.stats[5],
+    }
+    return stats
 
 
 

@@ -132,7 +132,7 @@ log:
   result_path: 
   save_freq: 0.005
   save_freq_mints: 20
-  print_freq: 1
+  print_freq: 20
   resume: True
 
 

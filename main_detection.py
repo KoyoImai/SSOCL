@@ -14,7 +14,7 @@ from models import make_backbone, load_pretrained_resnet_backbone
 from models.detection import build_detection_model
 from augmentaions import make_detection_augmentation
 from dataloaders import make_detection_dataset
-from train import detector_train
+from train import detector_train, detector_eval
 
 from torch.optim.lr_scheduler import _LRScheduler
 
@@ -181,7 +181,7 @@ def main(cfg):
         pin_memory=True,
         collate_fn=collate_fn,
     )
-    val_loader = DataLoader(
+    test_loader = DataLoader(
         test_dataset,
         batch_size=cfg.detection.eval.batch_size,
         shuffle=False,
@@ -202,10 +202,17 @@ def main(cfg):
     # =========================
     # 訓練と評価
     # =========================
+    best_map = 0.0
     for epoch in range(cfg.detection.train.epochs):
 
         # 学習の実行
-        detector_train(model, train_loader, cfg.detection.dataset.train_folder, optimizer, lr_scheduler, device, scaler, epoch, cfg.log.print_freq, cfg)
+        # detector_train(model, train_loader, cfg.detection.dataset.train_folder, optimizer, lr_scheduler, device, scaler, epoch, cfg.log.print_freq, cfg)
+
+        # 評価の実行
+        metrics = detector_eval(model, test_loader, cfg.detection.dataset.test_folder, optimizer, lr_scheduler, device, scaler, epoch, cfg.log.print_freq, cfg)
+        map_value = metrics.get("map", 0.0)
+        print(f"Validation mAP: {map_value:.4f}")
+
 
 
 

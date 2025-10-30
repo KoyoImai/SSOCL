@@ -8,7 +8,7 @@ from train.train_minred import train_minred
 from train.train_empssl import train_empssl
 from train.train_linear import train_linear
 from train.eval_linear import eval_linear
-from train.train_detection import train_detection
+from train.train_detection import train_detection, eval_detection
 
 
 
@@ -86,8 +86,14 @@ def detector_train(model, train_loader, train_folder, optimizer, lr_scheduler, d
 
     train_detection(model, train_loader, train_folder, optimizer, lr_scheduler, device, scaler, epoch, print_freq, cfg)
     
-    assert False
 
+
+
+def detector_eval(model, test_loader, test_folder, optimizer, lr_scheduler, device, scaler, epoch, print_freq, cfg):
+
+    metrics = eval_detection(model, test_loader, test_folder, optimizer, lr_scheduler, device, scaler, epoch, print_freq, cfg)
+
+    return metrics
 
 
 
