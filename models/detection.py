@@ -13,7 +13,7 @@ def build_detection_model(cfg, backbone: nn.Module) -> nn.Module:
     backbone_fpn = resnet_fpn_backbone(
         "resnet50",
         weights=None,
-        trainable_layers=cfg.detection.trainable_layers,
+        trainable_layers=cfg.detection.train.trainable_layers,
         returned_layers=None,
         extra_blocks=None,
     )
@@ -40,9 +40,9 @@ def build_detection_model(cfg, backbone: nn.Module) -> nn.Module:
 
     model = FasterRCNN(
         backbone=backbone_fpn,
-        num_classes=cfg.detection.num_classes,
-        image_mean=cfg.detection.image_mean,
-        image_std=cfg.detection.image_std,
+        num_classes=cfg.detection.dataset.num_classes,
+        image_mean=cfg.detection.train.image_mean,
+        image_std=cfg.detection.train.image_std,
     )
     return model
 

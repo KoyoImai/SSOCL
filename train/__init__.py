@@ -8,12 +8,15 @@ from train.train_minred import train_minred
 from train.train_empssl import train_empssl
 from train.train_linear import train_linear
 from train.eval_linear import eval_linear
+from train.train_detection import train_detection
 
 
 
 
 
-
+# ===========================================
+# 事前学習
+# ===========================================
 def train(model, model2, criterions, optimizer, trainloader, cfg, epoch, ckpt_manager, writer, scaler):
 
     if cfg.method.name == "ours":
@@ -52,6 +55,10 @@ def adjust_learning_rate(optimizer, epoch, cfg):
 
 
 
+
+# ===========================================
+# 線形分類訓練と評価
+# ===========================================
 def linear_train(model, classifier, criterion, optimizer, trainloader, valloader, epoch, scaler, writer, cfg):
 
     train_linear(model=model, classifier=classifier, criterion=criterion, optimizer=optimizer,
@@ -68,6 +75,19 @@ def linear_eval(model, classifier, criterion, optimizer, trainloader, valloader,
 
 
     return 
+
+
+
+
+# ===========================================
+# 物体検出の訓練と評価
+# ===========================================
+def detector_train(model, train_loader, train_folder, optimizer, lr_scheduler, device, scaler, epoch, print_freq, cfg):
+
+    train_detection(model, train_loader, train_folder, optimizer, lr_scheduler, device, scaler, epoch, print_freq, cfg)
+    
+    assert False
+
 
 
 

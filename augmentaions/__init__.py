@@ -7,6 +7,7 @@ import torchvision.transforms as transforms
 
 from augmentaions.multicrop_generator import MultiCropViewGenerator
 from augmentaions.simsiam_generator import make_simsiam_view_generator
+from augmentaions.detection_transform import build_detection_transforms
 
 
 def make_transform(cfg):
@@ -58,8 +59,8 @@ def make_transform_eval(cfg):
 
 def make_detection_augmentation(cfg):
 
-    train_augmentation = None
-    test_augmentation = None
+    train_augmentation = build_detection_transforms(cfg, train=True)
+    test_augmentation = build_detection_transforms(cfg, train=False)
 
     return train_augmentation, test_augmentation
 

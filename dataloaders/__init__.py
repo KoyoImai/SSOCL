@@ -1,7 +1,9 @@
 
-
+import os
 
 from dataloaders.imagenet21k import ImageNet21K, ImageNet21K_linear
+from dataloaders.coco_detection import CocoDetectionDataset
+
 from dataloaders.stream_sampler import StreamSampler
 from dataloaders.batchsampler.base_buffer_batchsampler import BaseBufferBatchSampler
 from dataloaders.batchsampler.minred_buffer_batchsampler import MinRedBufferBatchSampler
@@ -59,10 +61,11 @@ def make_batchsampler(cfg, dataset, sampler):
 
 
 
+# ===========================================
+# ここから下は評価用データセットの作成
+# ===========================================
 
-
-
-
+# 線形分類用のデータセット作成
 def make_dataset_eval(cfg, train_transform, val_transform):
 
     if cfg.linear.task_id == []:
@@ -99,3 +102,38 @@ def make_dataset_eval(cfg, train_transform, val_transform):
 
 
     return train_dataset, val_dataset
+
+
+
+# 物体検出用のデータセット作成
+def make_detection_dataset(cfg, train_augmentation, test_augmentation):
+
+    image_folder = cfg.detection.dataset.image_folder
+    anno_folder = cfg.detection.dataset.anno_folder
+
+    cfg.detection.dataset.train_folder = os.path.join(image_folder, "train2017")
+    cfg.detection.dataset.test_folder = os.path.join(image_folder, "val2017")
+
+    cfg.detection.dataset.train_ann = os.path.join(anno_folder, "instances_train2017.json")
+    cfg.detection.dataset.test_ann = os.path.join(anno_folder, "instances_val2017.json")
+
+
+    train_dataset = CocoDetectionDataset(
+        image_dir=cfg.detection.dataset.train_folder,
+        ann_file=cfg.detection.dataset.train_ann,
+        transforms=train_augmentation,
+    )
+    test_dataset = CocoDetectionDataset(
+        image_dir=cfg.detection.dataset.test_folder,
+        ann_file=cfg.detection.dataset.test_ann,
+        transforms=test_augmentation,
+    )
+
+
+    return train_dataset, test_dataset
+
+
+
+
+
+
