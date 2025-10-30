@@ -108,8 +108,6 @@ def train_detection(model, train_loader, train_folder, optimizer, lr_scheduler, 
 
 
 
-
-
 def eval_detection(model, test_loader, test_folder, optimizer, lr_scheduler, device, scaler, epoch, print_freq, cfg):
 
     model.eval()
