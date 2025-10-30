@@ -23,7 +23,7 @@ def train_empssl(model, model2, criterions, optimizer, trainloader, cfg, epoch, 
     losses = AverageMeter('Loss', ':.4e')
     lr_meter = AverageMeter('LR', ':.4e')
     buff_meters = []
-    if cfg.continual.buffer_type in ["minred"]:
+    if cfg.continual.buffer_type in ["minred", "random"]:
         num_seen = AverageMeter('#Seen', ':6.3f')
         num_seen_max = AverageMeter('#Seen Max', ':6.3f')
         similarity = AverageMeter('Buffer Sim', ':6.3f')
@@ -153,7 +153,7 @@ def train_empssl(model, model2, criterions, optimizer, trainloader, cfg, epoch, 
             # 平均特徴をバッファ内のサンプル情報として使用するため
             data["feature"] = z_avg.detach()
 
-            if cfg.continual.buffer_type in ["minred"]:
+            if cfg.continual.buffer_type in ["minred", "random"]:
                 stats = trainloader.batch_sampler.update_sample_stats(data)
 
                 if 'num_seen' in stats:
