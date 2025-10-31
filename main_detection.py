@@ -196,7 +196,8 @@ def main(cfg):
     # ===========================================
     # amp の作成
     # ===========================================
-    scaler = torch.cuda.amp.GradScaler(enabled=cfg.detection.use_amp)
+    # scaler = torch.cuda.amp.GradScaler(enabled=cfg.detection.use_amp)
+    scaler = None
 
 
     # =========================
@@ -206,7 +207,7 @@ def main(cfg):
     for epoch in range(cfg.detection.train.epochs):
 
         # 学習の実行
-        # detector_train(model, train_loader, cfg.detection.dataset.train_folder, optimizer, lr_scheduler, device, scaler, epoch, cfg.log.print_freq, cfg)
+        detector_train(model, train_loader, cfg.detection.dataset.train_folder, optimizer, lr_scheduler, device, scaler, epoch, cfg.log.print_freq, cfg)
 
         # 評価の実行
         metrics = detector_eval(model, test_loader, cfg.detection.dataset.test_folder, optimizer, lr_scheduler, device, scaler, epoch, cfg.log.print_freq, cfg)

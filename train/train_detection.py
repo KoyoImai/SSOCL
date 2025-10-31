@@ -71,8 +71,8 @@ def train_detection(model, train_loader, train_folder, optimizer, lr_scheduler, 
 
     for i, (images, targets) in enumerate(train_loader):
 
-        if i > 200:
-            break
+        # if i > 200:
+        #     break
 
         if lr_scheduler is not None:
             lr_scheduler.step()
@@ -86,18 +86,21 @@ def train_detection(model, train_loader, train_folder, optimizer, lr_scheduler, 
         # print("images[0].shape: ", images[0].shape)    # images[0].shape:  torch.Size([3, 480, 640])
         # assert False
 
-        with torch.cuda.amp.autocast(enabled=scaler is not None):
-            loss_dict = model(images, targets)
-            losses = sum(loss for loss in loss_dict.values())
+        # with torch.cuda.amp.autocast(enabled=scaler is not None):
+        loss_dict = model(images, targets)
+        losses = sum(loss for loss in loss_dict.values())
+
 
         optimizer.zero_grad()
-        if scaler is not None:
-            scaler.scale(losses).backward()
-            scaler.step(optimizer)
-            scaler.update()
-        else:
-            losses.backward()
-            optimizer.step()
+        losses.backward()
+        optimizer.step()
+        # if scaler is not None:
+        #     scaler.scale(losses).backward()
+        #     scaler.step(optimizer)
+        #     scaler.update()
+        # else:
+        #     losses.backward()
+        #     optimizer.step()
 
         if (i + 1) % print_freq == 0:
             elapsed = time.time() - time_start

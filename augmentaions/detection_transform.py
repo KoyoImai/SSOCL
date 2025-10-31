@@ -136,7 +136,7 @@ def build_detection_transforms(cfg, train: bool = True) -> Compose:
     if getattr(cfg.detection, "resize_images", False):
         transforms.append(Resize(cfg.detection.train.min_size, cfg.detection.train.max_size))
 
-    transforms.append(Normalize(mean, std))
+    # transforms.append(Normalize(mean, std))
     return Compose(transforms)
 
 
