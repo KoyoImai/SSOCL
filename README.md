@@ -66,11 +66,11 @@ ImageNet21Kのクラス分類による下流タスクの性能評価を実行す
     ```
 
 
-|  Model checkpoint and hub-module  |   ImageNet-21K Top-1   |
+|  Model checkpoint and hub-module  |   IN-21K Top-1   |
 |-----------------------------------|------------------------|
-|[MinRed]()                         |        69.1            |
-|[EMP-SSL]()                        |        74.2            |
-|[Imai]()                           |        76.6.           |
+|[MinRed]()                         |             |
+|[EMP-SSL]()                        |    14.83         |
+|[Imai]()                           |              |
 
 
 
