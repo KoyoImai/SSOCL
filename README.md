@@ -3,7 +3,7 @@
 ImageNet21Kを基に作成したデータストリームで事前学習し，クラス分類や物体検出などの下流タスクで評価します．
 
 # プログラムの全体像
-学習・評価に使用するプログラムの全体像は以下の通りです．
+学習・評価に使用するプログラムの全体像は以下の通りです．セグメンテーションなどの評価プログラムはこれから実装する予定です．
 ```
 SSOCL/
 ├── augmentations     : データ拡張関連を実装したモジュール群
@@ -19,10 +19,27 @@ SSOCL/
 └── utils.py          : その他のモジュールを実装するutilsファイル．
 ```
 
+
 # 実行方法
+
 ## ラベルなしデータストリームでの事前学習
 
+ImageNet21Kデータストリームで事前学習を実行する．
 
+- MinRed ([paper](https://arxiv.org/pdf/2203.12710)):
+    ```
+    python -m torch.distributed.launch --nproc_per_node=4 --use_env main.py --config-path ./configs/default/ --config-name default_minred
+    ```
+
+- EMP-SSL ([paper](https://arxiv.org/pdf/2304.03977)):
+    ```
+    python -m torch.distributed.launch --nproc_per_node=4 --use_env main.py --config-path ./configs/default/ --config-name default_empssl
+    ```
+
+- Imai ([paper](https://openaccess.thecvf.com/content/ACCV2024/papers/Imai_Faster_convergence_and_Uncorrelated_gradients_in_Self-Supervised_Online_Continual_Learning_ACCV_2024_paper.pdf)):
+    ```
+    python -m torch.distributed.launch --nproc_per_node=4 --use_env main.py --config-path ./configs/default/ --config-name default_ours
+    ```
 
 ## ラベルありデータセットでの学習と評価
 ### Image Classification
