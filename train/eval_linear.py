@@ -154,7 +154,7 @@ def eval_linear(model, classifier, criterion, optimizer, trainloader, valloader,
         write_csv(top1.avg.item(), cfg.log.result_path, file_name="top1_acc", task=cfg.linear.task_id, epoch=epoch)
         write_csv(top5.avg.item(), cfg.log.result_path, file_name="top5_acc", task=cfg.linear.task_id, epoch=epoch)
 
-    return all_stats
+    return top1.avg.item()
 
 
 

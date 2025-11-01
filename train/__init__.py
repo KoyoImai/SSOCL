@@ -36,7 +36,7 @@ def train(model, model2, criterions, optimizer, trainloader, cfg, epoch, ckpt_ma
         train_empssl(model=model, model2=model2, criterions=criterions, optimizer=optimizer,
                      trainloader=trainloader, cfg=cfg, epoch=epoch, ckpt_manager=ckpt_manager, writer=writer, scaler=scaler)
 
-        assert False
+
 
 
 
@@ -70,11 +70,11 @@ def linear_train(model, classifier, criterion, optimizer, trainloader, valloader
 
 def linear_eval(model, classifier, criterion, optimizer, trainloader, valloader, epoch, scaler, writer, cfg):
 
-    eval_linear(model=model, classifier=classifier, criterion=criterion, optimizer=optimizer,
+    top1_acc = eval_linear(model=model, classifier=classifier, criterion=criterion, optimizer=optimizer,
                  trainloader=trainloader, valloader=valloader, epoch=epoch, scaler=scaler, writer=writer, cfg=cfg)
 
 
-    return 
+    return top1_acc
 
 
 

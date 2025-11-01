@@ -93,6 +93,14 @@ MS COCOデータセットの物体検出による下流タスクの性能評価�
     python main_detection.py --config-path ./configs/default/ --config-name default_minred
     ```
 
+|  Method      |   AP   |  AP_{50}  |
+|--------------|--------|-----------|
+|full-scrach   |  19.5  |    34.6   |
+|[MinRed]()    |    |        |
+|[EMP-SSL]()   |    |        |
+|[Imai]()      |    |        |
+
+
 
 ### Segmentation
 未実装．．．

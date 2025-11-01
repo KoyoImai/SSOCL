@@ -251,6 +251,7 @@ def main(cfg):
     # =========================
     # 評価 
     # =========================
+    best_acc = 0.0
     for epoch in range(cfg.linear.train.epochs):
 
         adjust_learning_rate(optimizer, epoch, cfg)
@@ -258,9 +259,18 @@ def main(cfg):
         linear_train(model=model, classifier=classifier, criterion=criterion, optimizer=optimizer,
                      trainloader=trainloader, valloader=valloader, epoch=epoch, scaler=scaler, writer=writer, cfg=cfg)
 
-        linear_eval(model=model, classifier=classifier, criterion=criterion, optimizer=optimizer,
-                    trainloader=trainloader, valloader=valloader, epoch=epoch, scaler=scaler, writer=writer, cfg=cfg)
+        top1_acc = linear_eval(model=model, classifier=classifier, criterion=criterion, optimizer=optimizer,
+                               trainloader=trainloader, valloader=valloader, epoch=epoch, scaler=scaler, writer=writer, cfg=cfg)
 
+        if top1_acc > best_acc:
+            best_acc = top1_acc
+            checkpoint_path = os.path.join(cfg.log.model_path, "best_linear.pth")
+            torch.save({
+                "epoch": epoch,
+                "model": model.state_dict(),
+                "optimizer": optimizer.state_dict(),
+            }, checkpoint_path)
+            print(f"Saved new best detection checkpoint to {checkpoint_path}")
 
 
 
