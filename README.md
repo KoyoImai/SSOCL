@@ -67,7 +67,7 @@ ImageNet21Kのクラス分類による下流タスクの性能評価を実行す
 
 
 ### Object Detection
-MS COCOデータセットの物体検出による下流タスクの性能評価を実行する．\
+MS COCOデータセットの物体検出による下流タスクの性能評価を実行する．
 
 - MinRed ([paper](https://arxiv.org/pdf/2203.12710)):
     ```
