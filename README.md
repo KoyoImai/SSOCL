@@ -26,7 +26,7 @@ SSOCL/
 
 ImageNet21Kデータストリームで事前学習を実行する．
 学習の設定は`configs`ディレクトリの下に`.yaml`ファイルを追加，修正することで変更できます．
-`.yaml`ファイルを追加して学習する場合は，'--config-path'と
+`.yaml`ファイルを追加して学習する場合は，実行時の`--config-path`と`--config-name`を修正してから実行してください．
 
 - MinRed ([paper](https://arxiv.org/pdf/2203.12710)):
     ```
