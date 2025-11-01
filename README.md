@@ -45,9 +45,9 @@ ImageNet21Kデータストリームで事前学習を実行する．
 
 ## ラベルありデータセットでの学習と評価
 ### Image Classification
-クラス分類による下流タスクの性能評価を実行する．\
+ImageNet21Kのクラス分類による下流タスクの性能評価を実行する．\
 評価設定を記述した`.yaml`ファイルは，事前学習時と同じファイルを使用しますが，今後事前学習と評価は別の`.yaml`ファイルにする予定です．\
-事前学習とは異なり，基本的に1gpuでの評価を想定しています．
+事前学習とは異なり，基本的に1gpuでの評価を想定しています．\
 （もしかしたら，Multi GPUでも評価可能になるかもしれません．）
 
 - MinRed ([paper](https://arxiv.org/pdf/2203.12710)):
@@ -67,10 +67,24 @@ ImageNet21Kデータストリームで事前学習を実行する．
 
 
 ### Object Detection
+MS COCOデータセットの物体検出による下流タスクの性能評価を実行する．\
 
+- MinRed ([paper](https://arxiv.org/pdf/2203.12710)):
+    ```
+    python main_detection.py --config-path ./configs/default/ --config-name default_minred
+    ```
 
+- EMP-SSL ([paper](https://arxiv.org/pdf/2304.03977)):
+    ```
+    python main_detection.py --config-path ./configs/default/ --config-name default_empssl
+    ```
+
+- Imai ([paper](https://openaccess.thecvf.com/content/ACCV2024/papers/Imai_Faster_convergence_and_Uncorrelated_gradients_in_Self-Supervised_Online_Continual_Learning_ACCV_2024_paper.pdf)):
+    ```
+    python main_detection.py --config-path ./configs/default/ --config-name default_minred
+    ```
 
 
 ### Segmentation
-
+未実装．．．
 
