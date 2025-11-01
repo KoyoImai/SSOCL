@@ -132,21 +132,21 @@ def load_pretrained_resnet_backbone(cfg, backbone) -> Tuple[nn.Module, Dict[str,
     
     tv_resnet = torchvision.models.resnet50(weights=None)
 
-    # missing, unexpected = tv_resnet.load_state_dict(encoder_state_dict, strict=False)
+    missing, unexpected = tv_resnet.load_state_dict(encoder_state_dict, strict=False)
     # print("missing keys:", missing)
     # print("unexpected keys:", unexpected)
     # print("len(missing keys):", len(missing))
     # print("len(unexpected keys):", len(unexpected))
 
-    # expected_missing = {"fc.weight", "fc.bias"}
-    # if set(missing) - expected_missing:
-    #     raise RuntimeError(
-    #         f"Unexpected missing keys when loading encoder weights: {missing}"
-    #     )
-    # if unexpected:
-    #     raise RuntimeError(
-    #         f"Unexpected keys found when loading encoder weights: {unexpected}"
-    #     )
+    expected_missing = {"fc.weight", "fc.bias"}
+    if set(missing) - expected_missing:
+        raise RuntimeError(
+            f"Unexpected missing keys when loading encoder weights: {missing}"
+        )
+    if unexpected:
+        raise RuntimeError(
+            f"Unexpected keys found when loading encoder weights: {unexpected}"
+        )
 
 
     return tv_resnet, encoder_state_dict

@@ -214,12 +214,16 @@ def main(cfg):
         map_value = metrics.get("map", 0.0)
         print(f"Validation mAP: {map_value:.4f}")
 
-
-
-
-    
-
-
+        if map_value > best_map:
+            best_map = map_value
+            checkpoint_path = os.path.join(cfg.log.model_path, "detection_best.pth")
+            torch.save({
+                "epoch": epoch,
+                "model": model.state_dict(),
+                "optimizer": optimizer.state_dict(),
+                "metrics": metrics,
+            }, checkpoint_path)
+            print(f"Saved new best detection checkpoint to {checkpoint_path}")
 
 
 
