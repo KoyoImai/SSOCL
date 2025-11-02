@@ -6,6 +6,9 @@ import math
 from train.train_ours import train_ours
 from train.train_minred import train_minred
 from train.train_empssl import train_empssl
+from train.train_scale import train_scale
+
+# 評価用
 from train.train_linear import train_linear
 from train.eval_linear import eval_linear
 from train.train_detection import train_detection, eval_detection
@@ -36,7 +39,10 @@ def train(model, model2, criterions, optimizer, trainloader, cfg, epoch, ckpt_ma
         train_empssl(model=model, model2=model2, criterions=criterions, optimizer=optimizer,
                      trainloader=trainloader, cfg=cfg, epoch=epoch, ckpt_manager=ckpt_manager, writer=writer, scaler=scaler)
 
+    elif cfg.method.name == "scale":
 
+        train_scale(model=model, model2=model2, criterions=criterions, optimizer=optimizer,
+                     trainloader=trainloader, cfg=cfg, epoch=epoch, ckpt_manager=ckpt_manager, writer=writer, scaler=scaler)
 
 
 

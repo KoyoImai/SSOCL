@@ -91,6 +91,15 @@ def setup_hypara(cfg):
     # バッチサイズを各プロセスで均等に分割
     cfg.optimizer.train.batch_size = int(cfg.optimizer.train.batch_size / int(cfg.ddp.world_size))
 
+    try:
+        cfg.optimizer.train.stream_batch_size = int(cfg.optimizer.train.stream_batch_size / int(cfg.ddp.world_size))
+        cfg.optimizer.train.mem_batch_size = int(cfg.optimizer.train.mem_batch_size / int(cfg.ddp.world_size))
+        cfg.optimizer.train.batch_size = cfg.optimizer.train.stream_batch_size
+        cfg.optimizer.train.total_batch_size = cfg.optimizer.train.stream_batch_size + cfg.optimizer.train.mem_batch_size
+        print("cfg: ", cfg)
+    except:
+        pass
+
 
 
 def make_amp(cfg):
@@ -107,6 +116,7 @@ def make_amp(cfg):
     torch.backends.cuda.matmul.allow_tf32 = True
     torch.backends.cudnn.allow_tf32 = True
 
+    return scaler
 
 
 

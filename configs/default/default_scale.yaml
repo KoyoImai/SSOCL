@@ -1,20 +1,25 @@
 
-
 hydra:
   run:
-    dir: outputs/minred_baseline2
+    dir: outputs/scale_baseline
     
 
 # 手法名
 method: 
-  name: "minred"
+  name: "scale"
+  temp_psc: 0.07
+  temp_cur_ird: 0.1
+  temp_past_ird: 0.01
+  simil: "tSNE"
+  temp_tsne: 0.1
+  thres_ratio: 0.1
+  distill_power: 0.1
+
 
 
 model:
   type: "resnet50"
-  simsiam_dim: 2048
-  pred_dim: 512
-  fix_pred_lr: True
+  feat_dim: 2048
 
 
 dataset:
@@ -35,7 +40,10 @@ optimizer:
     weight_decay: 1e-4
     momentum: 0.9
     eta: 0.005
-    batch_size: 128
+    total_batch_size: 
+    batch_size: 128           # stream と memory と同じサイズ（main.py で自動で一致させるけど一応ここでも同じにする）
+    stream_batch_size: 128
+    mem_batch_size: 128
     start_epoch: 0
     epochs: 1
     scheduler_type: "cos"
@@ -54,26 +62,11 @@ continual:
                   28,   26,   31,   46,  105,   69,    43,  176,   49,   33, 
                   40,   43,   25,   49,   16,   90,   115,  131,   34,   52, 
                   52,   13,   17,  117,  243,  116,    16,   31,  139,  101]
-  n_task: 100
+  n_task: 2
   buffer_type: "minred"
-  buffer_size: 65536
+  buffer_size: 512
   repeat: 20
 
-
-log:
-  name: 
-  base: "baseline2"
-  model: "model"
-  result: "result"
-  base_path: 
-  model_path: 
-  explog_path: 
-  mem_path: 
-  result_path: 
-  save_freq: 0.005
-  save_freq_mints: 20
-  print_freq: 20
-  resume: True
 
 
 linear:
@@ -92,6 +85,23 @@ linear:
     cos: True
 
 
+
+log:
+  name: 
+  base: "baseline"
+  model: "model"
+  result: "result"
+  base_path: 
+  model_path: 
+  explog_path: 
+  mem_path: 
+  result_path: 
+  save_freq: 0.005
+  save_freq_mints: 20
+  print_freq: 20
+  resume: True
+
+
 ddp:
   local_rank: 
   use_ddp: 
@@ -99,17 +109,16 @@ ddp:
 
 
 amp:
-  use_amp: False
-  dtype: "fp32"        # "fp16" か "bf16"（A100/H100 や RTX 40xx は bf16 推奨）
+  use_amp: True
+  dtype: "fp16"        # "fp16" か "bf16"（A100/H100 や RTX 40xx は bf16 推奨）
   grad_scaler: true    # bf16 のときは自動的に無視されます
 
 
 
 seed: 777
-date: 2025_1027
+date: 2025_1022
 workers: 4
 
 
 debug: False
-
 

@@ -178,10 +178,6 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg, epoch, ck
             optimizer.step()
 
 
-
-
-        
-
         # バッファ内のサンプルの情報を更新する
         with torch.no_grad():
 

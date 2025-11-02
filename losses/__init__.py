@@ -12,31 +12,32 @@ def make_criterion(cfg):
 
         mcc_criterion = MultiCropContrastiveLoss(temp=cfg.method.temp_mcc)
         tcr_criterion = TotalCodingRateLoss(eps=cfg.method.eps_tcr)
-
         criterions = {"mcc": mcc_criterion, "tcr": tcr_criterion}
 
-
     elif cfg.method.name in ["minred"]:
-        criterion = nn.CosineSimilarity(dim=1)
 
+        criterion = nn.CosineSimilarity(dim=1)
         criterions = {"cos": criterion}
     
     elif cfg.method.name in ["empssl"]:
 
         from losses.loss_empssl import SimilarityLoss, TotalCodingRateLoss
-        
+    
         sim_criterion = SimilarityLoss()
         tcr_criterion = TotalCodingRateLoss(eps=cfg.method.eps_tcr)
-
         criterions = {"sim": sim_criterion, "tcr": tcr_criterion}
 
+    elif cfg.method.name in ["scale"]:
 
+        from losses.loss_scale import SupConLoss, IRDLoss
+
+        psc_criterion = SupConLoss(stream_bsz=cfg.optimizer.train.stream_batch_size, temperature=cfg.method.temp_psc)
+        ird_criterion = IRDLoss(current_temperature=cfg.method.temp_cur_ird, past_temperature=cfg.method.temp_past_ird)
+        criterions = {"psc": psc_criterion, "ird": ird_criterion}
     
     else:
         assert False
     
-
-
     return criterions
 
 

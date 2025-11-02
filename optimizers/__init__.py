@@ -13,7 +13,7 @@ def make_optimizer(cfg, model):
 
     optimizer = None
 
-    if cfg.method.name in ["ours", "empssl"]:
+    if cfg.method.name in ["ours", "empssl", "scale"]:
 
         optimizer = optim.SGD(
             model.parameters(),

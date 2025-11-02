@@ -5,9 +5,9 @@ from dataloaders.imagenet21k import ImageNet21K, ImageNet21K_linear
 from dataloaders.coco_detection import CocoDetectionDataset
 
 from dataloaders.stream_sampler import StreamSampler
-from dataloaders.batchsampler.base_buffer_batchsampler import BaseBufferBatchSampler
 from dataloaders.batchsampler.minred_buffer_batchsampler import MinRedBufferBatchSampler
 from dataloaders.batchsampler.random_buffer_batchsampler import RandomBufferBatchSampler
+from dataloaders.batchsampler.mix_minred_buffer_batchsampler import MixMinRedBufferBatchSampler
 
 
 
@@ -44,17 +44,27 @@ def make_sampler(cfg, dataset):
 
 def make_batchsampler(cfg, dataset, sampler):
 
-    if cfg.continual.buffer_type == "minred":
+    if cfg.method.name in ["ours", "minred", "empssl"]:
 
-        batchsampler = MinRedBufferBatchSampler(buffer_size=cfg.continual.buffer_size, repeat=cfg.continual.repeat,
-                                                dataset=dataset, sampler=sampler, batch_size=cfg.optimizer.train.batch_size, rank=cfg.ddp.local_rank)
+        if cfg.continual.buffer_type == "minred":
 
-    elif cfg.continual.buffer_type == "random":
+            batchsampler = MinRedBufferBatchSampler(buffer_size=cfg.continual.buffer_size, repeat=cfg.continual.repeat,
+                                                    dataset=dataset, sampler=sampler, batch_size=cfg.optimizer.train.batch_size, rank=cfg.ddp.local_rank)
 
-        batchsampler = RandomBufferBatchSampler(buffer_size=cfg.continual.buffer_size, repeat=cfg.continual.repeat,
-                                                dataset=dataset, sampler=sampler, batch_size=cfg.optimizer.train.batch_size, rank=cfg.ddp.local_rank)
+        elif cfg.continual.buffer_type == "random":
 
+            batchsampler = RandomBufferBatchSampler(buffer_size=cfg.continual.buffer_size, repeat=cfg.continual.repeat,
+                                                    dataset=dataset, sampler=sampler, batch_size=cfg.optimizer.train.batch_size, rank=cfg.ddp.local_rank)
 
+    elif cfg.method.name in ["scale"]:
+
+        if cfg.continual.buffer_type == "minred":
+
+            batchsampler = MixMinRedBufferBatchSampler(buffer_size=cfg.continual.buffer_size, repeat=cfg.continual.repeat, dataset=dataset, sampler=sampler,
+                                                       batch_size=cfg.optimizer.train.stream_batch_size, mem_batch_size=cfg.optimizer.train.mem_batch_size, rank=cfg.ddp.local_rank)
+
+    else:
+        assert False
     
     return batchsampler
 

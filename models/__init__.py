@@ -42,6 +42,13 @@ def make_model(cfg, use_ddp=True):
         model  = ResNetProjectorHead(name=cfg.model.type, seed=cfg.seed, cfg=cfg)
         model2 = ResNetProjectorHead(name=cfg.model.type, seed=cfg.seed, cfg=cfg)
 
+    elif cfg.method.name in ["scale"]:
+
+        from models.resnet_scale import ResNetProjectorHead
+
+        model  = ResNetProjectorHead(name=cfg.model.type, seed=cfg.seed, cfg=cfg)
+        model2 = ResNetProjectorHead(name=cfg.model.type, seed=cfg.seed, cfg=cfg)
+
     else:
         assert False
     

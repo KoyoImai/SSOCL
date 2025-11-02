@@ -16,7 +16,7 @@ def make_transform(cfg):
 
         transform = MultiCropViewGenerator(cfg=cfg, num_crops=cfg.method.num_crops)
     
-    elif cfg.method.name in ["minred"]:
+    elif cfg.method.name in ["minred", "scale"]:
 
         transform = make_simsiam_view_generator(cfg)
     
