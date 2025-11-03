@@ -50,7 +50,8 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg, epoch, ck
 
 
     # amp の使用状況
-    use_amp = bool(getattr(cfg, "amp", None) and cfg.amp.use_amp)
+    use_amp = False
+    # use_amp = bool(getattr(cfg, "amp", None) and cfg.amp.use_amp)
     amp_dtype = torch.bfloat16 if (use_amp and str(cfg.amp.dtype).lower() == "bf16") else torch.float16
 
     print(use_amp, amp_dtype)    # True torch.float16
@@ -91,13 +92,13 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg, epoch, ck
         
 
         # model の forward 処理
-        # encoded, feature, z_proj = model(images)
-        # # print("encoded.shape: ", encoded.shape)    # encoded.shape:  torch.Size([320, 2048])
-        # # print("feature.shape: ", feature.shape)    # feature.shape:  torch.Size([320, 4096])
-        # # print("z_proj.shape: ", z_proj.shape)      # z_proj.shape:  torch.Size([320, 1024])
+        encoded, feature, z_proj = model(images)
+        # print("encoded.shape: ", encoded.shape)    # encoded.shape:  torch.Size([320, 2048])
+        # print("feature.shape: ", feature.shape)    # feature.shape:  torch.Size([320, 4096])
+        # print("z_proj.shape: ", z_proj.shape)      # z_proj.shape:  torch.Size([320, 1024])
 
-        # z_proj_concat = concat_all_gather_keep_grad(z_proj)  # [B_global * V, D]
-        # # print("z_proj.shape: ", z_proj.shape)       # z_proj.shape:  torch.Size([1280, 1024])
+        z_proj_concat = concat_all_gather_keep_grad(z_proj)  # [B_global * V, D]
+        # print("z_proj.shape: ", z_proj.shape)       # z_proj.shape:  torch.Size([1280, 1024])
 
 
 

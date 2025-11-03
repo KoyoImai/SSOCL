@@ -50,7 +50,8 @@ def train_empssl(model, model2, criterions, optimizer, trainloader, cfg, epoch, 
 
 
     # amp の使用状況
-    use_amp = bool(getattr(cfg, "amp", None) and cfg.amp.use_amp)
+    use_amp = False
+    # use_amp = bool(getattr(cfg, "amp", None) and cfg.amp.use_amp)
     amp_dtype = torch.bfloat16 if (use_amp and str(cfg.amp.dtype).lower() == "bf16") else torch.float16
 
 
