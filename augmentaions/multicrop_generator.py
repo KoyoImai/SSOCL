@@ -43,6 +43,9 @@ class MultiCropViewGenerator(object):
 
         if cfg.dataset.type == "imagenet21k":
             self.data_insize = 224
+        
+        elif cfg.dataset.type == "krishnacam":
+            self.data_insize = 224
         else:
             assert False
 

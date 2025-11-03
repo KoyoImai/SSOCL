@@ -53,7 +53,7 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg, epoch, ck
     use_amp = bool(getattr(cfg, "amp", None) and cfg.amp.use_amp)
     amp_dtype = torch.bfloat16 if (use_amp and str(cfg.amp.dtype).lower() == "bf16") else torch.float16
 
-
+    print(use_amp, amp_dtype)    # True torch.float16
 
     print("len(trainloader): ", len(trainloader))
 
@@ -91,13 +91,13 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg, epoch, ck
         
 
         # model の forward 処理
-        encoded, feature, z_proj = model(images)
-        # print("encoded.shape: ", encoded.shape)    # encoded.shape:  torch.Size([320, 2048])
-        # print("feature.shape: ", feature.shape)    # feature.shape:  torch.Size([320, 4096])
-        # print("z_proj.shape: ", z_proj.shape)      # z_proj.shape:  torch.Size([320, 1024])
+        # encoded, feature, z_proj = model(images)
+        # # print("encoded.shape: ", encoded.shape)    # encoded.shape:  torch.Size([320, 2048])
+        # # print("feature.shape: ", feature.shape)    # feature.shape:  torch.Size([320, 4096])
+        # # print("z_proj.shape: ", z_proj.shape)      # z_proj.shape:  torch.Size([320, 1024])
 
-        z_proj_concat = concat_all_gather_keep_grad(z_proj)  # [B_global * V, D]
-        # print("z_proj.shape: ", z_proj.shape)       # z_proj.shape:  torch.Size([1280, 1024])
+        # z_proj_concat = concat_all_gather_keep_grad(z_proj)  # [B_global * V, D]
+        # # print("z_proj.shape: ", z_proj.shape)       # z_proj.shape:  torch.Size([1280, 1024])
 
 
 
@@ -123,6 +123,9 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg, epoch, ck
 
         if use_amp:
             with autocast(dtype=amp_dtype):
+                encoded, feature, z_proj = model(images)
+                z_proj_concat = concat_all_gather_keep_grad(z_proj)  # [B_global * V, D]
+                
                 z_list = z_proj_concat.chunk(cfg.method.num_crops, dim=0)
                 z_avg = chunk_avg(z_proj, cfg.method.num_crops)
 
@@ -135,6 +138,9 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg, epoch, ck
                 losses.update(loss.item(), images.size(0))
 
         else:
+            encoded, feature, z_proj = model(images)
+            z_proj_concat = concat_all_gather_keep_grad(z_proj)  # [B_global * V, D]
+            
             z_list = z_proj_concat.chunk(cfg.method.num_crops, dim=0)
             z_avg = chunk_avg(z_proj, cfg.method.num_crops)
 
@@ -142,9 +148,10 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg, epoch, ck
             loss_tcr = cal_TCR(z_proj, criterion_tcr, cfg.method.num_crops)
             mcc_losses.update(loss_mcc.item(), images.size(0))
             tcr_losses.update(loss_tcr.item(), images.size(0))
-
+        
             loss = cfg.method.lambda_mcc * loss_mcc + cfg.method.lambda_tcr * loss_tcr
             losses.update(loss.item(), images.size(0))
+
 
         
         

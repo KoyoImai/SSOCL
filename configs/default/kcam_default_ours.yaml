@@ -1,0 +1,113 @@
+
+# configファイルの保存先なので忘れず変更する
+hydra:
+  run:
+    dir: outputs/kcam_ours_baseline
+
+# 手法名
+method: 
+  name: "ours"
+  num_crops: 10
+  lambda_mcc: 200
+  lambda_tcr: 1.0
+  temp_mcc: 0.07
+  eps_tcr: 0.2
+
+
+model:
+  type: "resnet50"
+  hidden_dim: 4096
+  output_dim: 1024
+
+
+dataset:
+  type: "krishnacam"
+  num_classes: 436
+  data_folder: '/home/kouyou/datasets/'
+  filelist: "/home/kouyou/datasets/krishnacam/filelists/"
+  # filelist: ""
+  size: 224
+  drop_last: True
+  start_index: 0
+  sharding: "interleave"
+
+
+optimizer:
+  train:
+    learning_rate: 0.1
+    weight_decay: 1e-4
+    momentum: 0.9
+    eta: 0.005
+    batch_size: 32
+    start_epoch: 0
+    epochs: 1
+    scheduler_type: "cos"
+    scheduler_exit_decay: 0
+
+
+continual:
+  n_cls: 13971
+  cls_per_task: []
+  # n_task: 436
+  n_task: 5
+  buffer_type: "minred"
+  buffer_size: 65536
+  repeat: 3
+
+
+linear:
+  dataset: "imagenet21k"
+  task_id: []
+  n_task: 100
+  num_workers: 10
+  train:
+    batch_size: 1024
+    epochs: 100
+    learning_rate: 1.0
+    momentum: 0.9
+    weight_decay: 0
+    schedule: [60, 80]
+    eta: 0.005
+    cos: True
+
+
+log:
+  name: 
+  base: "baseline1"
+  model: "model"
+  result: "result"
+  base_path: 
+  model_path: 
+  explog_path: 
+  mem_path: 
+  result_path: 
+  save_freq: 0.005
+  save_freq_mints: 20
+  print_freq: 20
+  resume: True
+
+
+ddp:
+  local_rank: 
+  use_ddp: 
+  world_size: 
+
+amp:
+  use_amp: False
+  dtype: "fp16"        # "fp16" か "bf16"（A100/H100 や RTX 40xx は bf16 推奨）
+  grad_scaler: true    # bf16 のときは自動的に無視されます
+
+
+seed: 777
+date: 2025_1103
+workers: 4
+
+
+debug: False
+
+
+
+
+
+
+

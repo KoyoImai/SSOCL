@@ -185,7 +185,8 @@ def main(cfg):
     # =========================
     # AMP: GradScaler 準備
     # =========================
-    scaler = make_amp(cfg)
+    # scaler = make_amp(cfg)
+    amp = None
 
 
 

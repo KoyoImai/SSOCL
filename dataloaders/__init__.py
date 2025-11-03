@@ -2,6 +2,7 @@
 import os
 
 from dataloaders.imagenet21k import ImageNet21K, ImageNet21K_linear
+from dataloaders.krishnacam import KrishnaCAM
 from dataloaders.coco_detection import CocoDetectionDataset
 
 from dataloaders.stream_sampler import StreamSampler
@@ -22,7 +23,14 @@ def make_dataset(cfg, transform):
                                     filelist=cfg.dataset.filelist,
                                     num_task=cfg.continual.n_task,
                                     train=True)
-        
+    
+    elif cfg.dataset.type == "krishnacam":
+
+        train_dataset = KrishnaCAM(cfg=cfg,
+                                   transforms=transform,
+                                   filelist=cfg.dataset.filelist,
+                                   num_task=cfg.continual.n_task,
+                                   train=True)
     else:
         
         assert False
