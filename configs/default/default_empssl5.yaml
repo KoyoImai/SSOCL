@@ -62,6 +62,25 @@ continual:
   repeat: 3
 
 
+linear:
+  dataset: "imagenet21k"
+  task_id: []
+  n_task: 100
+  num_workers: 10
+  ckpt: "checkpoint_00001.0000.pth"
+  train:
+    batch_size: 1024
+    epochs: 100
+    learning_rate: 1.0
+    momentum: 0.9
+    weight_decay: 0
+    schedule: [60, 80]
+    eta: 0.005
+    cos: True
+
+
+
+
 log:
   name: 
   base: "baseline5"

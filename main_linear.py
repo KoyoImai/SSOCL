@@ -160,7 +160,8 @@ def main(cfg):
     # print("before[:5]:", before.flatten()[:5])
 
 
-    ckpt_path = f"{cfg.log.model_path}/checkpoint_00001.0000.pth"
+    ckpt_path = f"{cfg.log.model_path}/{cfg.linear.ckpt}"
+    # ckpt_path = f"{cfg.log.model_path}/checkpoint_00001.0000.pth"
     # ckpt_path = f"{cfg.log.model_path}/checkpoint_00000.9600.pth"
 
     checkpoint = torch.load(ckpt_path, map_location="cpu")
@@ -228,7 +229,7 @@ def main(cfg):
                            batch_size=500,
                            shuffle=False,
                            num_workers=cfg.linear.num_workers,
-                           pin_memory=True,
+                        #    pin_memory=True,
                            drop_last=False,
                            )
 

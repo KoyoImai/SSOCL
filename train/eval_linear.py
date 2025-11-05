@@ -28,7 +28,7 @@ warnings.filterwarnings(
 
 
 
-def write_csv(value, path, file_name, task, epoch):
+def write_csv(value, path, file_name, task, epoch, ckpt=None):
 
     # ファイルパスを生成
     file_path = f"{path}/{file_name}_task{task}.csv"
@@ -40,18 +40,18 @@ def write_csv(value, path, file_name, task, epoch):
             writer = csv.writer(csvfile)
             # ヘッダー行を定義（必要に応じて適宜変更）
             if isinstance(value, list):
-                header = ["task"] + ["epoch"] + [f"task_{i+1}" for i in range(len(value))]
+                header = ["ckpt"], ["task"] + ["epoch"] + [f"task_{i+1}" for i in range(len(value))]
             else:
-                header = ["task", "epoch", "value"]
+                header = ["ckpt", "task", "epoch", "value"]
             writer.writerow(header)
 
     # CSV に実際のデータを追加記録する
     with open(file_path, 'a', newline='') as csvfile:
         writer = csv.writer(csvfile)
         if isinstance(value, list):
-            row = [task] + [epoch] + value
+            row = [ckpt] + [task] + [epoch] + value
         else:
-            row = [task, epoch, value]
+            row = [ckpt, task, epoch, value]
         writer.writerow(row)
 
 
@@ -98,6 +98,9 @@ def eval_linear(model, classifier, criterion, optimizer, trainloader, valloader,
     amp_dtype = torch.bfloat16 if (use_amp and str(cfg.amp.dtype).lower() == "bf16") else torch.float16
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    # チェックポイント
+    ckpt = cfg.linear.ckpt
 
 
     with torch.no_grad():
@@ -148,11 +151,11 @@ def eval_linear(model, classifier, criterion, optimizer, trainloader, valloader,
 
 
     if cfg.linear.task_id == []:
-        write_csv(top1.avg.item(), cfg.log.result_path, file_name="top1_acc", task="all", epoch=epoch)
-        write_csv(top5.avg.item(), cfg.log.result_path, file_name="top5_acc", task="all", epoch=epoch)
+        write_csv(top1.avg.item(), cfg.log.result_path, file_name="top1_acc", task="all", epoch=epoch, ckpt=ckpt)
+        write_csv(top5.avg.item(), cfg.log.result_path, file_name="top5_acc", task="all", epoch=epoch, ckpt=ckpt)
     else:
-        write_csv(top1.avg.item(), cfg.log.result_path, file_name="top1_acc", task=cfg.linear.task_id, epoch=epoch)
-        write_csv(top5.avg.item(), cfg.log.result_path, file_name="top5_acc", task=cfg.linear.task_id, epoch=epoch)
+        write_csv(top1.avg.item(), cfg.log.result_path, file_name="top1_acc", task=cfg.linear.task_id, epoch=epoch, ckpt=ckpt)
+        write_csv(top5.avg.item(), cfg.log.result_path, file_name="top5_acc", task=cfg.linear.task_id, epoch=epoch, ckpt=ckpt)
 
     return top1.avg.item()
 

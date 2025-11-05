@@ -14,4 +14,4 @@ __pycache__/
 *.pdf
 *.csv
 debug_*/
-
+run_linear2_private.sh
