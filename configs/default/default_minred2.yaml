@@ -78,9 +78,10 @@ log:
 
 linear:
   dataset: "imagenet21k"
-  task_id: []
+  task_id: [6]
   n_task: 100
   num_workers: 10
+  ckpt: "checkpoint_00000.1000.pth"
   train:
     batch_size: 1024
     epochs: 100
@@ -90,6 +91,50 @@ linear:
     schedule: [60, 80]
     eta: 0.005
     cos: True
+
+
+
+detection:
+  ckpt: "checkpoint_00001.0000.pth"
+  dataset:
+    type: "coco"
+    image_folder: "/home/kouyou/datasets/coco/images"
+    anno_folder: "/home/kouyou/datasets/coco/annotations"
+    train_folder: 
+    test_folder: 
+    train_ann:
+    test_ann:
+    num_classes: 91
+  train:
+    batch_size: 2
+    # learning_rate: 0.0001
+    learning_rate: 0.0025
+    momentum: 0.9
+    weight_decay: 1e-4
+    epochs: 12
+    milestones: [473152, 650584]    #バッチサイズ2で[8, 11]エポック目あたりに下げる
+    # milestones: [236576, 325292]    #バッチサイズ4で[8, 11]エポック目あたりに下げる
+    # milestones: [59144, 81323]    #バッチサイズ4で[8, 11]エポック目あたりに下げる
+    gamma: 0.1
+    warmup_factor: 0.3
+    warmup_iters: 1000
+    trainable_layers: 3       # 学習可能モジュールの指定．「0:なし」「1:layer4」「2:layer4, layer3」「3:layer4 ~ layer2」「4:layer4 ~ layer1」「5:layer4 ~ layer1, bn1」
+    warmup_method: "linear"
+    random_horizontal_flip: 0.5
+    resize_images: false
+    min_size: 800
+    max_size: 1333
+    image_mean: [0.5, 0.5, 0.5]
+    image_std: [0.5, 0.5, 0.5]
+  eval:
+    batch_size: 4
+  use_amp: False
+
+
+
+
+
+
 
 
 ddp:

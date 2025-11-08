@@ -15,3 +15,5 @@ __pycache__/
 *.csv
 debug_*/
 run_linear2_private.sh
+run_linear3_private.sh
+
