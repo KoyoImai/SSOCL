@@ -1,5 +1,5 @@
 
-export CUDA_VISIBLE_DEVICES="0"
+export CUDA_VISIBLE_DEVICES="2"
 
 
 export NCCL_BLOCKING_WAIT=1
@@ -20,4 +20,8 @@ export CUDA_LAUNCH_BLOCKING=1
 
 
 ## ours2
-python main_linear.py --config-path ./configs/default/ --config-name default_ours2
+# python main_linear.py --config-path ./configs/default/ --config-name default_ours2
+
+
+## ours4
+python main_linear.py --config-path ./configs/default/ --config-name default_ours4

@@ -65,9 +65,10 @@ continual:
 
 linear:
   dataset: "imagenet21k"
-  task_id: []
+  task_id: [6]
   n_task: 100
   num_workers: 10
+  ckpt: "checkpoint_00000.3000.pth"
   train:
     batch_size: 1024
     epochs: 100

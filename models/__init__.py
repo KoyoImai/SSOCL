@@ -116,6 +116,12 @@ def _clean_state_dict(state_dict: Dict[str, torch.Tensor]) -> Dict[str, torch.Te
         if "head" in key:
             continue
 
+        if "projector" in key:
+            continue
+
+        if "predictor" in key:
+            continue
+
         cleaned_state_dict[key] = value
 
     return cleaned_state_dict
