@@ -52,17 +52,15 @@ class MultiCropViewGenerator(object):
     
     def __call__(self, img):
 
-        # mean=(0.430, 0.411, 0.296)
-        # std=(0.213, 0.156, 0.143)
-        mean=(0.5, 0.5, 0.5)
-        std=(0.5, 0.5, 0.5)
+        mean=(0.430, 0.411, 0.296)
+        std=(0.213, 0.156, 0.143)
+        # mean=(0.5, 0.5, 0.5)
+        # std=(0.5, 0.5, 0.5)
         normalize = transforms.Normalize(mean=mean, std=std)
 
 
         transform = transforms.Compose([
-            transforms.RandomResizedCrop(
-                self.data_insize, scale=(0.25, 0.25), interpolation=InterpolationMode.BICUBIC
-            ),
+            transforms.RandomResizedCrop(224, scale=(0.2, 1.0)),
             transforms.RandomHorizontalFlip(p=0.5),
             transforms.RandomApply([transforms.ColorJitter(0.4, 0.4, 0.4, 0.2)], p=0.8),
             transforms.RandomGrayscale(p=0.2),

@@ -125,8 +125,8 @@ class Normalize(_Transform):
 def build_detection_transforms(cfg, train: bool = True) -> Compose:
     """Factory to mirror the previous detection augmentation pipeline."""
 
-    mean = cfg.detection.train.image_mean
-    std = cfg.detection.train.image_std
+    # mean = cfg.detection.train.image_mean
+    # std = cfg.detection.train.image_std
 
     transforms: List[_Transform] = [ToTensor()]
 

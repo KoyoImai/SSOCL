@@ -33,6 +33,8 @@ def make_transform_eval(cfg):
     if cfg.method.name in ["ours", "empssl"]:
         mean=(0.5, 0.5, 0.5)
         std=(0.5, 0.5, 0.5)
+        # mean=(0.430, 0.411, 0.296)
+        # std=(0.213, 0.156, 0.143)
     elif cfg.method.name in ["minred"]:
         mean=(0.485, 0.456, 0.406)
         std=(0.229, 0.224, 0.225)

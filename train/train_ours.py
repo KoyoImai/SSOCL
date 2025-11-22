@@ -92,12 +92,12 @@ def train_ours(model, model2, criterions, optimizer, trainloader, cfg, epoch, ck
         
 
         # model の forward 処理
-        encoded, feature, z_proj = model(images)
+        # encoded, feature, z_proj = model(images)
         # print("encoded.shape: ", encoded.shape)    # encoded.shape:  torch.Size([320, 2048])
         # print("feature.shape: ", feature.shape)    # feature.shape:  torch.Size([320, 4096])
         # print("z_proj.shape: ", z_proj.shape)      # z_proj.shape:  torch.Size([320, 1024])
 
-        z_proj_concat = concat_all_gather_keep_grad(z_proj)  # [B_global * V, D]
+        # z_proj_concat = concat_all_gather_keep_grad(z_proj)  # [B_global * V, D]
         # print("z_proj.shape: ", z_proj.shape)       # z_proj.shape:  torch.Size([1280, 1024])
 
 

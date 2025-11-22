@@ -1,5 +1,5 @@
 
-export CUDA_VISIBLE_DEVICES="2"
+export CUDA_VISIBLE_DEVICES="0"
 
 
 export NCCL_BLOCKING_WAIT=1
@@ -15,8 +15,9 @@ export CUDA_LAUNCH_BLOCKING=1
 # ## MinRed
 # python main_linear.py --config-path ./configs/default/ --config-name default_empssl5
 
-# empssl
-python main_linear.py --config-path ./configs/default/ --config-name default_empssl2
+# # empssl
+# python main_linear.py --config-path ./configs/default/ --config-name default_empssl2
 
-
+# minred2
+python main_linear.py --config-path ./configs/default/ --config-name default_minred2
 

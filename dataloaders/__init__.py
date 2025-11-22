@@ -91,11 +91,11 @@ def make_dataset_eval(cfg, train_transform, val_transform):
     else:
         task_id = cfg.linear.task_id
 
-    if cfg.dataset.type == "imagenet21k":
+    if cfg.linear.dataset == "imagenet21k":
 
         train_dataset = ImageNet21K_linear(cfg=cfg,
                                            transforms=train_transform,
-                                           filelist=cfg.dataset.filelist,
+                                           filelist=cfg.linear.filelist,
                                            num_task=cfg.continual.n_task,
                                            train=False,
                                            linear_train=True,
@@ -103,7 +103,7 @@ def make_dataset_eval(cfg, train_transform, val_transform):
         
         val_dataset = ImageNet21K_linear(cfg=cfg,
                                          transforms=val_transform,
-                                         filelist=cfg.dataset.filelist,
+                                         filelist=cfg.linear.filelist,
                                          num_task=cfg.continual.n_task,
                                          train=False,
                                          linear_train=False,

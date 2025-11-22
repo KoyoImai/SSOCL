@@ -2,12 +2,12 @@
 # configファイルの保存先なので忘れず変更する
 hydra:
   run:
-    dir: outputs/ours_baseline4
+    dir: outputs/ours_baseline5
 
 # 手法名
 method: 
   name: "ours"
-  num_crops: 20
+  num_crops: 17
   lambda_mcc: 200
   lambda_tcr: 1.0
   temp_mcc: 0.07
@@ -38,7 +38,7 @@ optimizer:
     weight_decay: 1e-4
     momentum: 0.9
     eta: 0.005
-    batch_size: 128
+    batch_size: 100
     start_epoch: 0
     epochs: 1
     scheduler_type: "cos"
@@ -59,13 +59,13 @@ continual:
                   52,   13,   17,  117,  243,  116,    16,   31,  139,  101]
   n_task: 100
   buffer_type: "minred"
-  buffer_size: 65536
+  buffer_size: 16384
   repeat: 5
 
 
 log:
   name: 
-  base: "baseline4"
+  base: "baseline5"
   model: "model"
   result: "result"
   base_path: 
@@ -85,7 +85,7 @@ linear:
   task_id: []
   n_task: 100
   num_workers: 10
-  ckpt: "checkpoint_00001.0000.pth"
+  ckpt: "checkpoint_00000.7200.pth"
   train:
     batch_size: 1024
     epochs: 100
@@ -98,7 +98,7 @@ linear:
 
 
 detection:
-  ckpt: "checkpoint_00001.0000.pth"
+  ckpt: "checkpoint_00000.7200.pth"
   dataset:
     type: "coco"
     image_folder: "/home/kouyou/datasets/coco/images"
@@ -147,8 +147,8 @@ amp:
 
 
 seed: 777
-date: 2025_1027
-workers: 2
+date: 2025_1113
+workers: 4
 
 
 debug: False

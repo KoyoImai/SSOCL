@@ -2,15 +2,14 @@
 # configファイルの保存先なので忘れず変更する
 hydra:
   run:
-    dir: outputs/ours_baseline4
+    dir: outputs/empssl_baseline6
 
 # 手法名
 method: 
-  name: "ours"
+  name: "empssl"
   num_crops: 20
-  lambda_mcc: 200
+  lambda_sim: 200
   lambda_tcr: 1.0
-  temp_mcc: 0.07
   eps_tcr: 0.2
 
 
@@ -23,7 +22,7 @@ model:
 dataset:
   type: "imagenet21k"
   num_classes: 13971
-  data_folder: '/home/yanaka/datasets/'
+  data_folder: '/home/kouyou/datasets/'
   filelist: "/home/kouyou/make_dataset/kmeans_clustering_100/filelists/similar_order"
   # filelist: "/home/kouyou/ContinualLearning/kmeans_clustering_100/filelists4cluster/similar_order"
   size: 224
@@ -59,13 +58,13 @@ continual:
                   52,   13,   17,  117,  243,  116,    16,   31,  139,  101]
   n_task: 100
   buffer_type: "minred"
-  buffer_size: 65536
+  buffer_size: 16384
   repeat: 5
 
 
 log:
   name: 
-  base: "baseline4"
+  base: "baseline6"
   model: "model"
   result: "result"
   base_path: 
@@ -85,7 +84,7 @@ linear:
   task_id: []
   n_task: 100
   num_workers: 10
-  ckpt: "checkpoint_00001.0000.pth"
+  ckpt: "checkpoint_00000.8550.pth"
   train:
     batch_size: 1024
     epochs: 100
@@ -98,7 +97,7 @@ linear:
 
 
 detection:
-  ckpt: "checkpoint_00001.0000.pth"
+  ckpt: "checkpoint_00000.8550.pth"
   dataset:
     type: "coco"
     image_folder: "/home/kouyou/datasets/coco/images"
@@ -147,8 +146,8 @@ amp:
 
 
 seed: 777
-date: 2025_1027
-workers: 2
+date: 2025_1110
+workers: 4
 
 
 debug: False
