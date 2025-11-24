@@ -69,34 +69,14 @@ continual:
 #     eta: 0.005
 #     cos: True
   
-linear:
-  dataset: "cifar10"
-  filelist: "/home/kouyou/make_dataset/kmeans_clustering_100/filelists/similar_order"
-  data_folder: '/home/kouyou/datasets/'
-  task_id: []
-  num_classes: 10
-  n_task: 10
-  num_workers: 5
-  ckpt: "checkpoint_00001.0000.pth"
-  train:
-    batch_size: 1024
-    epochs: 100
-    learning_rate: 1.0
-    momentum: 0.9
-    weight_decay: 0
-    schedule: [60, 80]
-    eta: 0.005
-    cos: True
-
-
 # linear:
-#   dataset: "cifar100"
+#   dataset: "cifar10"
 #   filelist: "/home/kouyou/make_dataset/kmeans_clustering_100/filelists/similar_order"
 #   data_folder: '/home/kouyou/datasets/'
 #   task_id: []
-#   num_classes: 100
+#   num_classes: 10
 #   n_task: 10
-#   num_workers: 10
+#   num_workers: 5
 #   ckpt: "checkpoint_00001.0000.pth"
 #   train:
 #     batch_size: 1024
@@ -107,6 +87,26 @@ linear:
 #     schedule: [60, 80]
 #     eta: 0.005
 #     cos: True
+
+
+linear:
+  dataset: "cifar100"
+  filelist: "/home/kouyou/make_dataset/kmeans_clustering_100/filelists/similar_order"
+  data_folder: '/home/kouyou/datasets/'
+  task_id: []
+  num_classes: 100
+  n_task: 10
+  num_workers: 10
+  ckpt: "checkpoint_00001.0000.pth"
+  train:
+    batch_size: 1024
+    epochs: 100
+    learning_rate: 1.0
+    momentum: 0.9
+    weight_decay: 0
+    schedule: [60, 80]
+    eta: 0.005
+    cos: True
 
 
 log:

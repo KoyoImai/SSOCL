@@ -12,7 +12,7 @@ from augmentaions.detection_transform import build_detection_transforms
 
 def make_transform(cfg):
 
-    if cfg.method.name in ['ours', 'empssl']:
+    if cfg.method.name in ['ours', 'oursv2', 'empssl']:
 
         transform = MultiCropViewGenerator(cfg=cfg, num_crops=cfg.method.num_crops)
     
@@ -30,7 +30,7 @@ def make_transform(cfg):
 
 def make_transform_eval(cfg):
 
-    if cfg.method.name in ["ours", "empssl"]:
+    if cfg.method.name in ["ours", "oursv2", "empssl"]:
         mean=(0.5, 0.5, 0.5)
         std=(0.5, 0.5, 0.5)
         # mean=(0.430, 0.411, 0.296)

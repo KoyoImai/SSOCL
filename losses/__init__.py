@@ -13,6 +13,16 @@ def make_criterion(cfg):
         mcc_criterion = MultiCropContrastiveLoss(temp=cfg.method.temp_mcc)
         tcr_criterion = TotalCodingRateLoss(eps=cfg.method.eps_tcr)
         criterions = {"mcc": mcc_criterion, "tcr": tcr_criterion}
+    
+    elif cfg.method.name in ["oursv2"]:
+
+        from losses.loss_ours import MultiCropContrastiveLoss, TotalCodingRateLoss
+        from losses.loss_oursv2 import MultiCropDistillationLoss
+
+        mcc_criterion = MultiCropContrastiveLoss(temp=cfg.method.temp_mcc)
+        tcr_criterion = TotalCodingRateLoss(eps=cfg.method.eps_tcr)
+        distill_criterion = MultiCropDistillationLoss(temp=cfg.method.temp_mcc)
+        criterions = {"mcc": mcc_criterion, "tcr": tcr_criterion, "distill": distill_criterion}
 
     elif cfg.method.name in ["minred"]:
 

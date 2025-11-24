@@ -26,6 +26,13 @@ def make_model(cfg, use_ddp=True):
         model  = ResNetProjectorHead(name=cfg.model.type, seed=cfg.seed, cfg=cfg)
         model2 = ResNetProjectorHead(name=cfg.model.type, seed=cfg.seed, cfg=cfg)
     
+    elif cfg.method.name in ["oursv2"]:
+        from models.resnet_oursv2 import ResNetProjectorHead
+
+        model  = ResNetProjectorHead(name=cfg.model.type, seed=cfg.seed, cfg=cfg)
+        model2 = ResNetProjectorHead(name=cfg.model.type, seed=cfg.seed, cfg=cfg)
+
+
     elif cfg.method.name in ["minred"]:
 
         from models.resnet_simsiam import ResNetProjectorHead

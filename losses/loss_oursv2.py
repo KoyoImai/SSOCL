@@ -5,23 +5,26 @@ import torch.nn.functional as F
 
 
 
-class MultiCropContrastiveLoss(nn.Module):
+
+
+
+class MultiCropDistillationLoss(nn.Module):
 
     def __init__(self, temp):
 
-        super(MultiCropContrastiveLoss, self).__init__()
+        super(MultiCropDistillationLoss, self).__init__()
 
         self.criterion = nn.CrossEntropyLoss()
         self.temp = temp
 
     
-    def forward(self, features):
+    def forward(self, features, ema_features):
         
         num_patch = len(features)
         batch_size = features[0].shape[0]
         
-        # 特徴量の平均を計算
-        z_list = torch.stack(list(features), dim=0)
+        # 特徴量の平均 EMA model の出力特徴から計算
+        z_list = torch.stack(list(ema_features), dim=0)
         z_avg = z_list.mean(dim=0)
         #print("z_avg.shape : ", z_avg.shape)                    # torch.Size([100, 1024])
         
@@ -85,34 +88,5 @@ class MultiCropContrastiveLoss(nn.Module):
         
         loss = self.criterion(logits, labels)
         return loss
-
-
-
-
-class TotalCodingRateLoss(nn.Module):
-
-    def __init__(self, eps=0.01, alpha=0.01):
-
-        super(TotalCodingRateLoss, self).__init__()
-
-        self.eps = eps
-        self.alpha = alpha
-    
-
-    def compute_discrimn_loss(self, W):
-        
-        """Discriminative Loss."""
-        p, m = W.shape  #[d, B]
-        I = torch.eye(p,device=W.device)
-        scalar = p / (m * self.eps)
-        logdet = torch.logdet(I + scalar * W.matmul(W.T))
-        return logdet / 2.
-
-
-    def forward(self, X):
-
-        return - self.compute_discrimn_loss(X.T)
-
-
 
 

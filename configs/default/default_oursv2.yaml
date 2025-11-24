@@ -1,0 +1,187 @@
+
+# configファイルの保存先なので忘れず変更する
+hydra:
+  run:
+    dir: outputs/ours_baseline5
+
+# 手法名
+method: 
+  name: "oursv2"
+  num_crops: 20
+  lambda_mcc: 200
+  lambda_tcr: 1.0
+  lambda_distill: 1.0
+  temp_mcc: 0.07
+  eps_tcr: 0.2
+  ema_momentum: 0.999
+
+
+model:
+  type: "resnet50"
+  hidden_dim: 4096
+  output_dim: 1024
+
+
+dataset:
+  type: "imagenet21k"
+  num_classes: 13971
+  data_folder: '/home/kouyou/datasets/'
+  filelist: "/home/kouyou/make_dataset/kmeans_clustering_100/filelists/similar_order"
+  # filelist: "/home/kouyou/ContinualLearning/kmeans_clustering_100/filelists4cluster/similar_order"
+  size: 224
+  drop_last: True
+  start_index: 0
+  sharding: "interleave"
+
+
+optimizer:
+  train:
+    learning_rate: 0.1
+    weight_decay: 1e-4
+    momentum: 0.9
+    eta: 0.005
+    batch_size: 64
+    start_epoch: 0
+    epochs: 1
+    scheduler_type: "cos"
+    scheduler_exit_decay: 0
+
+
+continual:
+  n_cls: 13971
+  cls_per_task: [150,  419,  122,  876,  432,  228,  1623,  586,  395,  147,
+                  36,   92,  168,  276,  327,   67,   215,   52,  124,   21, 
+                  24,   97,  133,  139,   80,  427,    53,  221,   35,  261,
+                 133,   52,   75,   95,   88,  180,   138,   31,  187,   44, 
+                 124,  135,   54,   41,   65,  406,   202,   64,   64,   46, 
+                  98,    7,   53,  178,  111,  190,    56,  103,  198,  146, 
+                 122,  159,   26,   64,   99,   15,    68,   21,  139,   22, 
+                  28,   26,   31,   46,  105,   69,    43,  176,   49,   33, 
+                  40,   43,   25,   49,   16,   90,   115,  131,   34,   52, 
+                  52,   13,   17,  117,  243,  116,    16,   31,  139,  101]
+  n_task: 1
+  buffer_type: "minred"
+  buffer_size: 16384
+  repeat: 5
+
+
+log:
+  name: 
+  base: "baseline5"
+  model: "model"
+  result: "result"
+  base_path: 
+  model_path: 
+  explog_path: 
+  mem_path: 
+  result_path: 
+  save_freq: 0.005
+  save_freq_mints: 20
+  print_freq: 20
+  resume: True
+
+linear:
+  dataset: "imagenet21k"
+  filelist: "/home/kouyou/make_dataset/kmeans_clustering_100/filelists/similar_order"
+  data_folder: '/home/kouyou/datasets/'
+  task_id: [0]
+  num_classes: 150
+  n_task: 100
+  num_workers: 10
+  ckpt: "checkpoint_00001.0000.pth"
+  train:
+    batch_size: 1024
+    epochs: 100
+    learning_rate: 1.0
+    momentum: 0.9
+    weight_decay: 0
+    schedule: [60, 80]
+    eta: 0.005
+    cos: True
+
+# linear:
+#   dataset: "cifar100"
+#   filelist: "/home/kouyou/make_dataset/kmeans_clustering_100/filelists/similar_order"
+#   data_folder: '/home/kouyou/datasets/'
+#   task_id: []
+#   num_classes: 100
+#   n_task: 10
+#   num_workers: 10
+#   ckpt: "checkpoint_00001.0000.pth"
+#   train:
+#     batch_size: 1024
+#     epochs: 100
+#     learning_rate: 1.0
+#     momentum: 0.9
+#     weight_decay: 0
+#     schedule: [60, 80]
+#     eta: 0.005
+#     cos: True
+
+knn:
+  dataset: "imagenet21k"
+  filelist: "/home/kouyou/make_dataset/kmeans_clustering_100/filelists/similar_order"
+  task_id: [3]
+  n_task: 100
+  ckpt: "checkpoint_00000.3700.pth"
+  num_k: 50
+  metric: "cosine"
+
+detection:
+  ckpt: "checkpoint_00001.0000.pth"
+  dataset:
+    type: "coco"
+    image_folder: "/home/kouyou/datasets/coco/images"
+    anno_folder: "/home/kouyou/datasets/coco/annotations"
+    train_folder: 
+    test_folder: 
+    train_ann:
+    test_ann:
+    num_classes: 91
+  train:
+    batch_size: 2
+    # learning_rate: 0.0001
+    learning_rate: 0.0025
+    momentum: 0.9
+    weight_decay: 1e-4
+    epochs: 12
+    milestones: [473152, 650584]    #バッチサイズ2で[8, 11]エポック目あたりに下げる
+    # milestones: [236576, 325292]    #バッチサイズ4で[8, 11]エポック目あたりに下げる
+    # milestones: [59144, 81323]    #バッチサイズ4で[8, 11]エポック目あたりに下げる
+    gamma: 0.1
+    warmup_factor: 0.3
+    warmup_iters: 1000
+    trainable_layers: 3       # 学習可能モジュールの指定．「0:なし」「1:layer4」「2:layer4, layer3」「3:layer4 ~ layer2」「4:layer4 ~ layer1」「5:layer4 ~ layer1, bn1」
+    warmup_method: "linear"
+    random_horizontal_flip: 0.5
+    resize_images: false
+    min_size: 800
+    max_size: 1333
+    image_mean: [0.5, 0.5, 0.5]
+    image_std: [0.5, 0.5, 0.5]
+  eval:
+    batch_size: 4
+  use_amp: False
+
+
+
+ddp:
+  local_rank: 
+  use_ddp: 
+  world_size: 
+
+amp:
+  use_amp: True
+  dtype: "fp16"        # "fp16" か "bf16"（A100/H100 や RTX 40xx は bf16 推奨）
+  grad_scaler: true    # bf16 のときは自動的に無視されます
+
+
+seed: 777
+date: 2025_1113
+workers: 4
+
+
+debug: False
+
+
+

@@ -54,7 +54,7 @@ def make_sampler(cfg, dataset):
 
 def make_batchsampler(cfg, dataset, sampler):
 
-    if cfg.method.name in ["ours", "minred", "empssl"]:
+    if cfg.method.name in ["ours", "oursv2", "minred", "empssl"]:
 
         if cfg.continual.buffer_type == "minred":
 
