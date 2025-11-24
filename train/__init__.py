@@ -1,7 +1,8 @@
 
-
+import os
 import math
 
+import torch
 
 from train.train_ours import train_ours
 from train.train_minred import train_minred
@@ -11,6 +12,7 @@ from train.train_scale import train_scale
 # 評価用
 from train.train_linear import train_linear
 from train.eval_linear import eval_linear
+from train.knn import feature_extractor, feature_label_save, knn, knn_orig
 from train.train_detection import train_detection, eval_detection
 
 
@@ -83,6 +85,52 @@ def linear_eval(model, classifier, criterion, optimizer, trainloader, valloader,
     return top1_acc
 
 
+
+# ===========================================
+# k-NN分類訓練と評価
+# ===========================================
+def knn_eval(model, trainloader, valloader, writer, cfg):
+
+    # 訓練用データとテスト用データの特徴量・ラベルを保存するファイルのパス
+    save_dir = cfg.log.explog_path
+
+    filename = f"feature_label_taksid{cfg.knn.task_id}_{cfg.knn.ckpt}"
+    file_path = os.path.join(save_dir, filename)
+
+    # 特徴量がない場合，特徴抽出を実行
+    if not os.path.isfile(file_path):
+        train_features, train_labels, val_features, val_labels = feature_extractor(model, trainloader, valloader, writer, cfg)
+        save_path = feature_label_save(train_features, train_labels, val_features, val_labels, cfg, save_dir=save_dir, filename=filename)
+    # 特徴量が既に抽出済みならそれを読み込む
+    else:
+        data = torch.load(file_path, map_location="cpu")
+
+        train_features = data["train_features"]
+        train_labels   = data["train_labels"]
+        val_features   = data["val_features"]
+        val_labels     = data["val_labels"]
+    print("train_features.shape: ", train_features.shape)
+    print("train_labels.shape: ", train_labels.shape)
+    print("val_features.shape: ", val_features.shape)
+    print("val_labels.shape: ", val_labels.shape)
+
+
+    # top1, top5 = knn(cfg,
+    #                  train_features,
+    #                  train_labels,
+    #                  val_features,
+    #                  val_labels,
+    #                  n_neighbors=cfg.knn.num_k,
+    #                  metric=cfg.knn.metric)
+    top1, top5 = knn_orig(cfg,
+                          train_features,
+                          train_labels,
+                          val_features,
+                          val_labels,
+                          k=cfg.knn.num_k,
+                          T=0.07,
+                          chunk_size=1024,
+                         )
 
 
 # ===========================================

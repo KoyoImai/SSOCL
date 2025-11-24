@@ -28,10 +28,13 @@ warnings.filterwarnings(
 
 
 
-def write_csv(value, path, file_name, task, epoch, ckpt=None):
+def write_csv(value, path, file_name, task, dataset, epoch, ckpt=None):
 
     # ファイルパスを生成
-    file_path = f"{path}/{file_name}_task{task}.csv"
+    if dataset == "imagenet21k":
+        file_path = f"{path}/{file_name}_task{task}.csv"
+    else:
+        file_path = f"{path}/{file_name}_task{task}_{dataset}.csv"
 
     # ファイルが存在しなければ新規作成、かつヘッダー行を記入する
     # value がリストの場合は、ヘッダーの値部分は要素数に合わせて "value_1", "value_2", ... とする例
@@ -151,11 +154,11 @@ def eval_linear(model, classifier, criterion, optimizer, trainloader, valloader,
 
 
     if cfg.linear.task_id == []:
-        write_csv(top1.avg.item(), cfg.log.result_path, file_name="top1_acc", task="all", epoch=epoch, ckpt=ckpt)
-        write_csv(top5.avg.item(), cfg.log.result_path, file_name="top5_acc", task="all", epoch=epoch, ckpt=ckpt)
+        write_csv(top1.avg.item(), cfg.log.result_path, file_name="top1_acc", dataset=cfg.linear.dataset, task="all", epoch=epoch, ckpt=ckpt)
+        write_csv(top5.avg.item(), cfg.log.result_path, file_name="top5_acc", dataset=cfg.linear.dataset, task="all", epoch=epoch, ckpt=ckpt)
     else:
-        write_csv(top1.avg.item(), cfg.log.result_path, file_name="top1_acc", task=cfg.linear.task_id, epoch=epoch, ckpt=ckpt)
-        write_csv(top5.avg.item(), cfg.log.result_path, file_name="top5_acc", task=cfg.linear.task_id, epoch=epoch, ckpt=ckpt)
+        write_csv(top1.avg.item(), cfg.log.result_path, file_name="top1_acc", dataset=cfg.linear.dataset, task=cfg.linear.task_id, epoch=epoch, ckpt=ckpt)
+        write_csv(top5.avg.item(), cfg.log.result_path, file_name="top5_acc", dataset=cfg.linear.dataset, task=cfg.linear.task_id, epoch=epoch, ckpt=ckpt)
 
     return top1.avg.item()
 

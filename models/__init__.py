@@ -71,7 +71,7 @@ def make_model(cfg, use_ddp=True):
 def make_classifier(cfg):
 
     if cfg.model.type == "resnet50":
-        classifier = LinearClassifier(num_classes=cfg.dataset.num_classes,
+        classifier = LinearClassifier(num_classes=cfg.linear.num_classes,
                                       feat_dim=2048,
                                       seed=cfg.seed)
     else:

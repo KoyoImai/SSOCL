@@ -16,4 +16,6 @@ __pycache__/
 debug_*/
 run_linear2_private.sh
 run_linear3_private.sh
+make_bash*
+configs/knn*
 

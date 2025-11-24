@@ -1,6 +1,6 @@
 
 
-export CUDA_VISIBLE_DEVICES="3"
+export CUDA_VISIBLE_DEVICES="1"
 
 
 export NCCL_BLOCKING_WAIT=1
@@ -32,6 +32,6 @@ export TORCH_NCCL_HEARTBEAT_TIMEOUT_SEC=1200
 
 
 ## default_ours5
-python main_detection.py --config-path ./configs/default/ --config-name default_ours5 > ours5_detection_7200_layer3.txt
+python main_detection.py --config-path ./configs/default/ --config-name default_ours5 > ours5_detection.txt
 
 

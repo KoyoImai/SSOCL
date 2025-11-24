@@ -63,10 +63,49 @@ continual:
 
 
 
+# linear:
+#   dataset: "imagenet21k"
+#   task_id: [6]
+#   n_task: 100
+#   num_workers: 10
+#   ckpt: "checkpoint_00001.0000.pth"
+#   train:
+#     batch_size: 1024
+#     epochs: 100
+#     learning_rate: 1.0
+#     momentum: 0.9
+#     weight_decay: 0
+#     schedule: [60, 80]
+#     eta: 0.005
+#     cos: True
+
+
+# linear:
+#   dataset: "cifar10"
+#   filelist: "/home/kouyou/make_dataset/kmeans_clustering_100/filelists/similar_order"
+#   data_folder: '/home/kouyou/datasets/'
+#   task_id: []
+#   n_task: 10
+#   num_workers: 5
+#   ckpt: "checkpoint_00001.0000.pth"
+#   train:
+#     batch_size: 1024
+#     epochs: 100
+#     learning_rate: 1.0
+#     momentum: 0.9
+#     weight_decay: 0
+#     schedule: [60, 80]
+#     eta: 0.005
+#     cos: True
+
+
 linear:
-  dataset: "imagenet21k"
-  task_id: [6]
-  n_task: 100
+  dataset: "cifar100"
+  filelist: "/home/kouyou/make_dataset/kmeans_clustering_100/filelists/similar_order"
+  data_folder: '/home/kouyou/datasets/'
+  task_id: []
+  num_classes: 100
+  n_task: 10
   num_workers: 10
   ckpt: "checkpoint_00001.0000.pth"
   train:
@@ -78,7 +117,7 @@ linear:
     schedule: [60, 80]
     eta: 0.005
     cos: True
-
+    
 
 detection:
   ckpt: "checkpoint_00001.0000.pth"
@@ -133,7 +172,7 @@ log:
   result_path: 
   save_freq: 0.005
   save_freq_mints: 20
-  print_freq: 1
+  print_freq: 20
   resume: True
 
 

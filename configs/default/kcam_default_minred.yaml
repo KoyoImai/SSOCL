@@ -2,22 +2,18 @@
 # configファイルの保存先なので忘れず変更する
 hydra:
   run:
-    dir: outputs/kcam_ours_baseline
+    dir: outputs/kcam_minred_baseline
 
 # 手法名
 method: 
-  name: "ours"
-  num_crops: 10
-  lambda_mcc: 200
-  lambda_tcr: 1.0
-  temp_mcc: 0.07
-  eps_tcr: 0.2
+  name: "minred"
 
 
 model:
   type: "resnet50"
-  hidden_dim: 4096
-  output_dim: 1024
+  simsiam_dim: 2048
+  pred_dim: 512
+  fix_pred_lr: True
 
 
 dataset:
@@ -38,7 +34,7 @@ optimizer:
     weight_decay: 1e-4
     momentum: 0.9
     eta: 0.005
-    batch_size: 32
+    batch_size: 128
     start_epoch: 0
     epochs: 1
     scheduler_type: "cos"
@@ -46,52 +42,35 @@ optimizer:
 
 
 continual:
-  n_cls: 13971
+  n_cls: 436
   cls_per_task: []
-  # n_task: 436
-  n_task: 5
+  n_task: 436
+  # n_task: 5
   buffer_type: "minred"
   buffer_size: 65536
-  repeat: 3
-
-
-# linear:
-#   dataset: "imagenet21k"
-#   task_id: []
-#   n_task: 100
-#   num_workers: 10
-#   train:
-#     batch_size: 1024
-#     epochs: 100
-#     learning_rate: 1.0
-#     momentum: 0.9
-#     weight_decay: 0
-#     schedule: [60, 80]
-#     eta: 0.005
-#     cos: True
-
-
-# linear:
-#   dataset: "cifar10"
-#   filelist: "/home/kouyou/make_dataset/kmeans_clustering_100/filelists/similar_order"
-#   data_folder: '/home/kouyou/datasets/'
-#   task_id: []
-#   num_classes: 10
-#   n_task: 10
-#   num_workers: 5
-#   ckpt: "checkpoint_00001.0000.pth"
-#   train:
-#     batch_size: 1024
-#     epochs: 100
-#     learning_rate: 1.0
-#     momentum: 0.9
-#     weight_decay: 0
-#     schedule: [60, 80]
-#     eta: 0.005
-#     cos: True
+  repeat: 5
 
 
 linear:
+  dataset: "imagenet21k"
+  filelist: "/home/kouyou/ContinualLearning/kmeans_clustering_100/filelists4cluster/similar_order"
+  num_classes: 13971
+  task_id: []
+  n_task: 100
+  num_workers: 10
+  ckpt: "checkpoint_00001.0000.pth"
+  train:
+    batch_size: 1024
+    epochs: 100
+    learning_rate: 1.0
+    momentum: 0.9
+    weight_decay: 0
+    schedule: [60, 80]
+    eta: 0.005
+    cos: True
+  
+
+  linear:
   dataset: "cifar100"
   filelist: "/home/kouyou/make_dataset/kmeans_clustering_100/filelists/similar_order"
   data_folder: '/home/kouyou/datasets/'
@@ -109,7 +88,7 @@ linear:
     schedule: [60, 80]
     eta: 0.005
     cos: True
-    
+
 
 log:
   name: 
@@ -133,13 +112,13 @@ ddp:
   world_size: 
 
 amp:
-  use_amp: False
+  use_amp: True
   dtype: "fp16"        # "fp16" か "bf16"（A100/H100 や RTX 40xx は bf16 推奨）
   grad_scaler: true    # bf16 のときは自動的に無視されます
 
 
 seed: 777
-date: 2025_1105
+date: 2025_1107
 workers: 4
 
 

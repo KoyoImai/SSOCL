@@ -3,6 +3,8 @@ import os
 
 from dataloaders.imagenet21k import ImageNet21K, ImageNet21K_linear
 from dataloaders.krishnacam import KrishnaCAM
+from dataloaders.cifar10 import Cifar10
+from dataloaders.cifar100 import Cifar100
 from dataloaders.coco_detection import CocoDetectionDataset
 
 from dataloaders.stream_sampler import StreamSampler
@@ -92,15 +94,13 @@ def make_dataset_eval(cfg, train_transform, val_transform):
         task_id = cfg.linear.task_id
 
     if cfg.linear.dataset == "imagenet21k":
-
         train_dataset = ImageNet21K_linear(cfg=cfg,
                                            transforms=train_transform,
                                            filelist=cfg.linear.filelist,
                                            num_task=cfg.continual.n_task,
                                            train=False,
                                            linear_train=True,
-                                           task_id=task_id)
-        
+                                           task_id=task_id)  
         val_dataset = ImageNet21K_linear(cfg=cfg,
                                          transforms=val_transform,
                                          filelist=cfg.linear.filelist,
@@ -108,19 +108,59 @@ def make_dataset_eval(cfg, train_transform, val_transform):
                                          train=False,
                                          linear_train=False,
                                          task_id=task_id)
-        
+    elif cfg.linear.dataset == "cifar10":
+        train_dataset = Cifar10(cfg=cfg,
+                                augmentation=train_transform,
+                                data_folder=cfg.linear.data_folder,
+                                train=True)
+        val_dataset = Cifar10(cfg=cfg,
+                              augmentation=val_transform,
+                              data_folder=cfg.linear.data_folder,
+                              train=False)
+    elif cfg.linear.dataset == "cifar100":
+        train_dataset = Cifar100(cfg=cfg,
+                                 augmentation=train_transform,
+                                 data_folder=cfg.linear.data_folder,
+                                 train=True)
+        val_dataset = Cifar100(cfg=cfg,
+                               augmentation=val_transform,
+                               data_folder=cfg.linear.data_folder,
+                               train=False)
 
-        # print("len(train_dataset): ", len(train_dataset))
-        # print("len(val_dataset): ", len(val_dataset))
 
     else:
         assert False
 
-
-
-
     return train_dataset, val_dataset
 
+
+
+def make_dataset_knn(cfg, train_transform, val_transform):
+
+    if cfg.knn.task_id == []:
+        task_id = list(range(cfg.knn.n_task))
+    else:
+        task_id = cfg.knn.task_id
+
+    if cfg.linear.dataset == "imagenet21k":
+        train_dataset = ImageNet21K_linear(cfg=cfg,
+                                           transforms=train_transform,
+                                           filelist=cfg.knn.filelist,
+                                           num_task=cfg.continual.n_task,
+                                           train=False,
+                                           linear_train=True,
+                                           task_id=task_id)  
+        val_dataset = ImageNet21K_linear(cfg=cfg,
+                                         transforms=val_transform,
+                                         filelist=cfg.knn.filelist,
+                                         num_task=cfg.continual.n_task,
+                                         train=False,
+                                         linear_train=False,
+                                         task_id=task_id)
+    else:
+        assert False
+
+    return train_dataset, val_dataset
 
 
 # 物体検出用のデータセット作成

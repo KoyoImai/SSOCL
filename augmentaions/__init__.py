@@ -58,6 +58,35 @@ def make_transform_eval(cfg):
     return train_transform, val_transform
 
 
+def make_transform_knn(cfg):
+
+    if cfg.method.name in ["ours", "empssl"]:
+        mean=(0.5, 0.5, 0.5)
+        std=(0.5, 0.5, 0.5)
+        # mean=(0.430, 0.411, 0.296)
+        # std=(0.213, 0.156, 0.143)
+    elif cfg.method.name in ["minred"]:
+        mean=(0.485, 0.456, 0.406)
+        std=(0.229, 0.224, 0.225)
+
+    normalize = transforms.Normalize(mean=mean, std=std)
+
+    train_transform = transforms.Compose([
+        transforms.Resize(int(224 * 256 / float(224))),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        normalize,
+    ])
+
+    val_transform = transforms.Compose([
+        transforms.Resize(int(224 * 256 / float(224))),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        normalize,
+    ])
+
+    return train_transform, val_transform
+
 
 def make_detection_augmentation(cfg):
 

@@ -2,15 +2,14 @@
 # configファイルの保存先なので忘れず変更する
 hydra:
   run:
-    dir: outputs/kcam_ours_baseline
+    dir: outputs/kcam_empssl_baseline
 
 # 手法名
 method: 
-  name: "ours"
+  name: "empssl"
   num_crops: 10
-  lambda_mcc: 200
+  lambda_sim: 200
   lambda_tcr: 1.0
-  temp_mcc: 0.07
   eps_tcr: 0.2
 
 
@@ -38,7 +37,7 @@ optimizer:
     weight_decay: 1e-4
     momentum: 0.9
     eta: 0.005
-    batch_size: 32
+    batch_size: 128
     start_epoch: 0
     epochs: 1
     scheduler_type: "cos"
@@ -46,10 +45,10 @@ optimizer:
 
 
 continual:
-  n_cls: 13971
+  n_cls: 436
   cls_per_task: []
-  # n_task: 436
-  n_task: 5
+  n_task: 436
+  # n_task: 5
   buffer_type: "minred"
   buffer_size: 65536
   repeat: 3
@@ -59,7 +58,10 @@ continual:
 #   dataset: "imagenet21k"
 #   task_id: []
 #   n_task: 100
+#   num_classes: 13971
 #   num_workers: 10
+#   ckpt: "checkpoint_00001.0000.pth"
+#   filelist: "/home/kouyou/ContinualLearning/kmeans_clustering_100/filelists4cluster/similar_order"
 #   train:
 #     batch_size: 1024
 #     epochs: 100
@@ -90,7 +92,6 @@ continual:
 #     eta: 0.005
 #     cos: True
 
-
 linear:
   dataset: "cifar100"
   filelist: "/home/kouyou/make_dataset/kmeans_clustering_100/filelists/similar_order"
@@ -109,7 +110,6 @@ linear:
     schedule: [60, 80]
     eta: 0.005
     cos: True
-    
 
 log:
   name: 
@@ -133,7 +133,7 @@ ddp:
   world_size: 
 
 amp:
-  use_amp: False
+  use_amp: True
   dtype: "fp16"        # "fp16" か "bf16"（A100/H100 や RTX 40xx は bf16 推奨）
   grad_scaler: true    # bf16 のときは自動的に無視されます
 

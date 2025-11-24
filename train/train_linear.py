@@ -52,10 +52,11 @@ def train_linear(model, classifier, criterion, optimizer, trainloader, valloader
     batch_time = AverageMeter('Time', ':6.3f', tbname='train/time')
     data_time = AverageMeter('Data', ':6.3f', tbname='train/datatime')
     losses = AverageMeter('Loss', ':.4e', tbname='train/loss')
+    lr_meter = AverageMeter('LR', ':.4e')
     top1 = AverageMeter('Acc@1', ':6.2f', tbname='train/top1')
     top5 = AverageMeter('Acc@5', ':6.2f', tbname='train/top5')
     progress = ProgressMeter(len(trainloader),
-                             [batch_time, data_time, losses, top1, top5],
+                             [batch_time, data_time, losses, lr_meter, top1, top5],
                              prefix="Epoch: [{}]".format(epoch),
                              tbwriter=writer)
     
@@ -99,6 +100,10 @@ def train_linear(model, classifier, criterion, optimizer, trainloader, valloader
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+
+        # 現在の学習率
+        current_lr = optimizer.param_groups[0]['lr']
+        lr_meter.update(current_lr)
 
         # measure elapsed time
         batch_time.update(time.time() - end)
