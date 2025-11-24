@@ -23,11 +23,10 @@ SSOCL/
 
 # 実行方法
 ## ラベルなしデータストリームでの事前学習
-
-ImageNet21Kデータストリームで事前学習を実行する．
+ImageNet21KデータストリームかKrishnaCAMデータセットで事前学習を実行する．
 学習の設定は`configs`ディレクトリの下に`.yaml`ファイルを追加，修正することで変更できます．
 `.yaml`ファイルを追加して学習する場合は，実行時の`--config-path`と`--config-name`を修正してから実行してください．
-
+### ImageNet21Kデータストリームで次戦学習
 - MinRed ([paper](https://arxiv.org/pdf/2203.12710)):
     ```
     python -m torch.distributed.launch --nproc_per_node=4 --use_env main.py --config-path ./configs/default/ --config-name default_minred
@@ -43,12 +42,28 @@ ImageNet21Kデータストリームで事前学習を実行する．
     python -m torch.distributed.launch --nproc_per_node=4 --use_env main.py --config-path ./configs/default/ --config-name default_ours
     ```
 
+### KrishnaCAMデータストリームで事前学習を実行
+- MinRed ([paper](https://arxiv.org/pdf/2203.12710)):
+    ```
+    python -m torch.distributed.launch --nproc_per_node=4 --use_env main.py --config-path ./configs/default/ --config-name kcam_default_minred
+    ```
+
+- EMP-SSL ([paper](https://arxiv.org/pdf/2304.03977)):
+    ```
+    python -m torch.distributed.launch --nproc_per_node=4 --use_env main.py --config-path ./configs/default/ --config-name kcam_default_empssl
+    ```
+
+- Imai ([paper](https://openaccess.thecvf.com/content/ACCV2024/papers/Imai_Faster_convergence_and_Uncorrelated_gradients_in_Self-Supervised_Online_Continual_Learning_ACCV_2024_paper.pdf)):
+    ```
+    python -m torch.distributed.launch --nproc_per_node=4 --use_env main.py --config-path ./configs/default/ --config-name kcam_default_ours
+    ```
+
 ## ラベルありデータセットを使用して下流タスクでの学習と評価
 ### Image Classification
-ImageNet21Kのクラス分類による下流タスクの性能評価を実行する．\
-評価設定を記述した`.yaml`ファイルは，事前学習時と同じファイルを使用しますが，今後事前学習と評価は別の`.yaml`ファイルにする予定です．\
-事前学習とは異なり，基本的に1gpuでの評価を想定しています．\
-（もしかしたら，Multi GPUでも評価可能になるかもしれません．）
+ImageNet21Kやcifar10，cifar100などデータセットを使用したクラス分類による下流タスクの性能評価を実行する．
+評価設定を記述した`.yaml`ファイルは，事前学習時と同じファイルを使用しますが，今後事前学習と評価は別の`.yaml`ファイルにする予定です．
+事前学習とは異なり，基本的に1gpuでの評価を想定しています．
+データセットや評価タスクの変更方法（ImageNet21Kのみ）については`SSOCL/configs`のREADMEを確認してください．
 
 - MinRed ([paper](https://arxiv.org/pdf/2203.12710)):
     ```

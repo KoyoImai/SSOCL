@@ -10,11 +10,11 @@ export TORCH_NCCL_HEARTBEAT_TIMEOUT_SEC=1200
 export CUDA_LAUNCH_BLOCKING=1
 
 
-## ours4
-python main_linear.py --config-path ./configs/default/ --config-name kcam_default_ours
+# ## ours4
+# python main_linear.py --config-path ./configs/default/ --config-name kcam_default_ours
 
-# ## MinRed
-# python main_linear.py --config-path ./configs/default/ --config-name default_minred2
+## MinRed
+python main_linear.py --config-path ./configs/default/ --config-name kcam_default_minred
 
 
 # ## default_minred4
