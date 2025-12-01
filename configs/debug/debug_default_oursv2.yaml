@@ -2,7 +2,7 @@
 # configファイルの保存先なので忘れず変更する
 hydra:
   run:
-    dir: outputs/oursv2_baseline
+    dir: outputs/debug_oursv2_baseline
 
 # 手法名
 method: 
@@ -59,7 +59,7 @@ continual:
                   28,   26,   31,   46,  105,   69,    43,  176,   49,   33, 
                   40,   43,   25,   49,   16,   90,   115,  131,   34,   52, 
                   52,   13,   17,  117,  243,  116,    16,   31,  139,  101]
-  n_task: 100
+  n_task: 10
   buffer_type: "minred"
   buffer_size: 16384
   repeat: 5
@@ -67,7 +67,7 @@ continual:
 
 log:
   name: 
-  base: "baseline"
+  base: "debug"
   model: "model"
   result: "result"
   base_path: 
@@ -178,7 +178,7 @@ amp:
 
 
 seed: 777
-date: 2025_1125
+date: 2025_1201
 workers: 4
 
 

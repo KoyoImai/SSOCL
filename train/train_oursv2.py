@@ -157,6 +157,8 @@ def train_oursv2(model, model2, criterions, optimizer, trainloader, cfg, epoch, 
         loss.backward()
         optimizer.step()
 
+        model.module._momentum_update_ema()
+
 
         # バッファ内のサンプルの情報を更新する
         with torch.no_grad():

@@ -142,7 +142,7 @@ def make_dataset_knn(cfg, train_transform, val_transform):
     else:
         task_id = cfg.knn.task_id
 
-    if cfg.linear.dataset == "imagenet21k":
+    if cfg.knn.dataset == "imagenet21k":
         train_dataset = ImageNet21K_linear(cfg=cfg,
                                            transforms=train_transform,
                                            filelist=cfg.knn.filelist,

@@ -60,7 +60,7 @@ def make_transform_eval(cfg):
 
 def make_transform_knn(cfg):
 
-    if cfg.method.name in ["ours", "empssl"]:
+    if cfg.method.name in ["ours", "oursv2", "empssl"]:
         mean=(0.5, 0.5, 0.5)
         std=(0.5, 0.5, 0.5)
         # mean=(0.430, 0.411, 0.296)

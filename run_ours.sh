@@ -1,6 +1,6 @@
 
 
-export CUDA_VISIBLE_DEVICES="0,1,2,3"
+export CUDA_VISIBLE_DEVICES="2,3"
 
 
 export NCCL_BLOCKING_WAIT=1
@@ -17,6 +17,6 @@ export CUDA_LAUNCH_BLOCKING=1
 
 
 
-# python -m torch.distributed.launch --nproc_per_node=4 --use_env main.py --config-path ./configs/default/ --config-name default_oursv2
-python main_linear.py --config-path ./configs/default/ --config-name default_oursv2
+python -m torch.distributed.launch --nproc_per_node=2 --use_env main.py --config-path ./configs/debug/ --config-name debug_default_oursv2
+# python main_linear.py --config-path ./configs/default/ --config-name default_oursv2
 

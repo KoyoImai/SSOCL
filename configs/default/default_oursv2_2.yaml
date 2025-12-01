@@ -2,7 +2,7 @@
 # configファイルの保存先なので忘れず変更する
 hydra:
   run:
-    dir: outputs/oursv2_baseline
+    dir: outputs/oursv2_baseline2
 
 # 手法名
 method: 
@@ -40,7 +40,7 @@ optimizer:
     weight_decay: 1e-4
     momentum: 0.9
     eta: 0.005
-    batch_size: 128
+    batch_size: 100
     start_epoch: 0
     epochs: 1
     scheduler_type: "cos"
@@ -67,7 +67,7 @@ continual:
 
 log:
   name: 
-  base: "baseline"
+  base: "baseline2"
   model: "model"
   result: "result"
   base_path: 
@@ -80,14 +80,33 @@ log:
   print_freq: 20
   resume: True
 
+linear:
+  dataset: "imagenet21k"
+  filelist: "/home/kouyou/make_dataset/kmeans_clustering_100/filelists/similar_order"
+  data_folder: '/home/kouyou/datasets/'
+  task_id: [0,1,2,3,4,5]
+  # task_id: [6]
+  num_classes: 13971
+  n_task: 100
+  num_workers: 10
+  ckpt: "checkpoint_00000.5000.pth"
+  train:
+    batch_size: 1024
+    epochs: 100
+    learning_rate: 1.0
+    momentum: 0.9
+    weight_decay: 0
+    schedule: [60, 80]
+    eta: 0.005
+    cos: True
+
 # linear:
-#   dataset: "imagenet21k"
+#   dataset: "cifar100"
 #   filelist: "/home/kouyou/make_dataset/kmeans_clustering_100/filelists/similar_order"
 #   data_folder: '/home/kouyou/datasets/'
-#   task_id: [20,21,22]
-#   # task_id: [6]
-#   num_classes: 13971
-#   n_task: 100
+#   task_id: []
+#   num_classes: 100
+#   n_task: 10
 #   num_workers: 10
 #   ckpt: "checkpoint_00000.5000.pth"
 #   train:
@@ -100,31 +119,12 @@ log:
 #     eta: 0.005
 #     cos: True
 
-linear:
-  dataset: "cifar100"
-  filelist: "/home/kouyou/make_dataset/kmeans_clustering_100/filelists/similar_order"
-  data_folder: '/home/kouyou/datasets/'
-  task_id: []
-  num_classes: 100
-  n_task: 10
-  num_workers: 10
-  ckpt: "checkpoint_00000.8400.pth"
-  train:
-    batch_size: 1024
-    epochs: 100
-    learning_rate: 1.0
-    momentum: 0.9
-    weight_decay: 0
-    schedule: [60, 80]
-    eta: 0.005
-    cos: True
-
 knn:
   dataset: "imagenet21k"
   filelist: "/home/kouyou/make_dataset/kmeans_clustering_100/filelists/similar_order"
-  task_id: [23]
+  task_id: [3]
   n_task: 100
-  ckpt: "checkpoint_00000.1700.pth"
+  ckpt: "checkpoint_00000.3700.pth"
   num_k: 50
   metric: "cosine"
 
