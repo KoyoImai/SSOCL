@@ -179,7 +179,7 @@ def main(cfg):
     dataset = make_dataset(cfg, train_transform)
     sampler = make_sampler(cfg, dataset)
     batch_sampler = make_batchsampler(cfg, dataset, sampler)
-    trainloader = DataLoader(dataset, batch_sampler=batch_sampler, num_workers=cfg.workers, pin_memory=True)
+    trainloader = DataLoader(dataset, batch_sampler=batch_sampler, num_workers=cfg.workers, pin_memory=False)
 
 
     # =========================

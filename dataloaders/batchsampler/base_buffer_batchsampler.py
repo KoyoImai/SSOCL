@@ -165,6 +165,15 @@ class BaseBufferBatchSampler(Sampler[List[int]], ABC):
     def load_state_dict(self, state_dict):
 
         self.buffer = deque(reverse_tensorized_buffer(state_dict['buffer'], self.rank), maxlen=self.buffer_size)
+
+        if torch.cuda.is_available():
+            device = torch.device("cuda", torch.cuda.current_device())
+            for b in self.buffer:
+                feat = b.get("feature", None)
+                # feature が Tensor のときだけ移動（None のエントリもあるので guard）
+                if isinstance(feat, torch.Tensor):
+                    b["feature"] = feat.to(device, non_blocking=True)
+
         self.db_head = state_dict['db_head']
         self.num_batches_seen = state_dict['num_batches_seen']
         self.num_batches_yielded = state_dict['num_batches_yielded']
